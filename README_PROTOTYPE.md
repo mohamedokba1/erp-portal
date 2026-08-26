@@ -14,6 +14,29 @@ npm start
 
 Then open http://localhost:4200 — you'll land on the login screen.
 
+## Deploy to GitHub Pages (free hosting)
+
+A workflow at `.github/workflows/deploy-pages.yml` builds and deploys this app to
+GitHub Pages automatically on every push to `main`. It computes the correct
+`--base-href` from the repo name and adds a `404.html` fallback so Angular's
+client-side routing (e.g. a direct link to `/finance/dashboard`) works correctly
+on Pages, which has no server-side rewrites.
+
+To go live:
+
+1. Create a new **empty** repository on GitHub (don't initialize it with a README).
+2. Push this repo to it:
+   ```bash
+   git remote add origin https://github.com/<your-username>/<repo-name>.git
+   git push -u origin main
+   ```
+3. On GitHub: **Settings → Pages → Source → GitHub Actions** (one-time toggle).
+4. Wait ~1-2 minutes for the "Deploy to GitHub Pages" workflow to finish (check the
+   **Actions** tab). Your live demo link will be
+   `https://<your-username>.github.io/<repo-name>/`.
+
+Every future `git push` to `main` redeploys automatically.
+
 ## Login & access management
 
 Authentication is fully static (`src/app/core/auth/auth.service.ts`) — no backend, no
