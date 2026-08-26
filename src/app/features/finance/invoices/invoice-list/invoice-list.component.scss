@@ -337,6 +337,18 @@
   font-weight: 600;
 }
 
+.payment-delete {
+  background: none;
+  border: none;
+  color: var(--slate-400);
+  cursor: pointer;
+  padding: 4px;
+  margin-inline-start: 6px;
+
+  &:hover { color: var(--danger-600); }
+  i { font-size: 12px; }
+}
+
 .detail-notes {
   display: flex;
   align-items: flex-start;

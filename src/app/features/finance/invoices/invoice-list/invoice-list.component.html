@@ -83,6 +83,12 @@
           <button class="icon-action" [title]="'عرض التفاصيل' | t" (click)="openDetail(inv)">
             <i class="pi pi-eye"></i>
           </button>
+          <button class="icon-action" [title]="'تعديل' | t" *ngIf="canEditInvoice(inv)" (click)="openEditInvoice(inv)">
+            <i class="pi pi-pencil"></i>
+          </button>
+          <button class="icon-action danger" [title]="'حذف' | t" *ngIf="canEditInvoice(inv)" (click)="confirmDeleteInvoice(inv)">
+            <i class="pi pi-trash"></i>
+          </button>
         </td>
       </tr>
     </ng-template>
@@ -157,6 +163,9 @@
           <span class="payment-meta">{{ p.method | t }} · {{ p.date }} · {{ 'مرجع' | t }} {{ p.reference }}</span>
         </div>
         <span class="payment-by">{{ p.recordedBy }}</span>
+        <button class="payment-delete" [title]="'حذف' | t" *ngIf="auth.can('invoices.recordPayment')" (click)="confirmDeletePayment(inv, p.id)">
+          <i class="pi pi-trash"></i>
+        </button>
       </div>
     </div>
 
@@ -170,11 +179,17 @@
       <button class="btn-outline-sm" (click)="markSent(inv)" *ngIf="inv.status === 'مسودة'">
         <i class="pi pi-check"></i> {{ 'إصدار وإرسال' | t }}
       </button>
+      <button class="btn-outline-sm" (click)="openEditInvoice(inv)" *ngIf="canEditInvoice(inv)">
+        <i class="pi pi-pencil"></i> {{ 'تعديل' | t }}
+      </button>
       <button class="btn-primary-sm" (click)="openPayment(inv)" *ngIf="remaining(inv) > 0 && inv.status !== 'ملغاة'">
         <i class="pi pi-money-bill"></i> {{ 'تسجيل دفعة' | t }}
       </button>
       <button class="btn-danger-sm" (click)="confirmCancel(inv)" *ngIf="canCancel() && inv.status !== 'ملغاة' && inv.status !== 'مدفوعة بالكامل'">
         <i class="pi pi-times"></i> {{ 'إلغاء الفاتورة' | t }}
+      </button>
+      <button class="btn-danger-sm" (click)="confirmDeleteInvoice(inv)" *ngIf="canEditInvoice(inv)">
+        <i class="pi pi-trash"></i> {{ 'حذف' | t }}
       </button>
     </div>
   </ng-container>
@@ -305,6 +320,85 @@
       <i class="pi pi-send"></i> {{ 'إصدار وإرسال' | t }}
     </button>
   </div>
+</p-dialog>
+
+<!-- ============ EDIT INVOICE DIALOG (drafts only) ============ -->
+<p-dialog
+  [(visible)]="showEdit"
+  [modal]="true"
+  [style]="{ width: '760px' }"
+  [dismissableMask]="true"
+  [header]="'تعديل الفاتورة' | t"
+  (onHide)="closeEditInvoice()"
+>
+  <ng-container *ngIf="editTarget as inv">
+    <div class="form-grid">
+      <div class="field">
+        <label>{{ 'العميل' | t }}</label>
+        <p-dropdown
+          [options]="customers"
+          optionLabel="name"
+          optionValue="id"
+          [(ngModel)]="editDraft.customerId"
+          [filter]="true"
+          filterBy="name"
+          styleClass="w-full"
+        ></p-dropdown>
+      </div>
+      <div class="field">
+        <label>{{ 'شروط الدفع' | t }}</label>
+        <input type="text" class="form-input" [(ngModel)]="editDraft.paymentTerms" />
+      </div>
+      <div class="field">
+        <label>{{ 'تاريخ الإصدار' | t }}</label>
+        <input type="date" class="form-input" [(ngModel)]="editDraft.issueDate" />
+      </div>
+      <div class="field">
+        <label>{{ 'تاريخ الاستحقاق' | t }}</label>
+        <input type="date" class="form-input" [(ngModel)]="editDraft.dueDate" />
+      </div>
+    </div>
+
+    <div class="items-editor">
+      <div class="items-editor-head">
+        <span>{{ 'البند' | t }}</span>
+        <span>{{ 'الكمية' | t }}</span>
+        <span>{{ 'سعر الوحدة' | t }}</span>
+        <span>{{ 'الضريبة %' | t }}</span>
+        <span>{{ 'الإجمالي' | t }}</span>
+        <span></span>
+      </div>
+      <div class="items-editor-row" *ngFor="let item of editDraft.items; let i = index">
+        <input type="text" class="form-input" [(ngModel)]="item.description" [placeholder]="'البند' | t" />
+        <input type="number" class="form-input" [(ngModel)]="item.quantity" min="1" />
+        <input type="number" class="form-input" [(ngModel)]="item.unitPrice" min="0" />
+        <input type="number" class="form-input" [(ngModel)]="item.taxPercent" min="0" max="100" />
+        <span class="num line-total">{{ editLineTotal(item) | number:'1.0-0' }}</span>
+        <button class="icon-action danger" (click)="removeEditLineItem(i)" [disabled]="editDraft.items.length === 1">
+          <i class="pi pi-trash"></i>
+        </button>
+      </div>
+      <button class="btn-outline-sm add-line" (click)="addEditLineItem()"><i class="pi pi-plus"></i> {{ 'إضافة بند' | t }}</button>
+    </div>
+
+    <div class="field notes-field">
+      <label>{{ 'ملاحظات (اختياري)' | t }}</label>
+      <textarea class="form-input" rows="2" [(ngModel)]="editDraft.notes"></textarea>
+    </div>
+
+    <div class="totals-box">
+      <div class="totals-row"><span>{{ 'الإجمالي الفرعي' | t }}</span><span class="num">{{ editSubtotal | number:'1.0-0' }} {{ 'ج.م' | t }}</span></div>
+      <div class="totals-row"><span>{{ 'الضريبة' | t }}</span><span class="num">{{ editTax | number:'1.0-0' }} {{ 'ج.م' | t }}</span></div>
+      <div class="totals-row grand"><span>{{ 'الإجمالي' | t }}</span><span class="num">{{ editTotal | number:'1.0-0' }} {{ 'ج.م' | t }}</span></div>
+    </div>
+
+    <div class="dialog-footer">
+      <button class="btn-outline-sm" (click)="closeEditInvoice()">{{ 'إلغاء' | t }}</button>
+      <button class="btn-primary-sm" [disabled]="!isEditValid" (click)="saveInvoiceEdit()">
+        <i class="pi pi-check"></i> {{ 'حفظ التعديلات' | t }}
+      </button>
+    </div>
+  </ng-container>
 </p-dialog>
 
 <p-confirmDialog></p-confirmDialog>

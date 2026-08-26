@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
+import { MessageService } from 'primeng/api';
 import { FinanceDataService } from '../../../core/data/finance-data.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { ClientFinanceSummary, Invoice, PaymentBehavior, InvoiceStatus } from '../../../core/models/models';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { LanguageService } from '../../../core/i18n/language.service';
@@ -20,16 +22,28 @@ export class ClientStatusComponent implements OnInit {
   searchTerm = '';
   behaviorFilter: PaymentBehavior | 'الكل' = 'الكل';
   behaviorOptions: (PaymentBehavior | 'الكل')[] = ['الكل', 'ملتزم', 'متأخر أحياناً', 'متعثر'];
+  behaviorChoices: PaymentBehavior[] = ['ملتزم', 'متأخر أحياناً', 'متعثر'];
 
   showDetail = false;
   selectedClient: ClientFinanceSummary | null = null;
   selectedInvoices: Invoice[] = [];
 
-  constructor(private finance: FinanceDataService, public lang: LanguageService) {}
+  showEditTerms = false;
+  termsDraft = { creditLimit: 0, paymentBehavior: 'ملتزم' as PaymentBehavior, avgPaymentDays: 0 };
+
+  constructor(
+    private finance: FinanceDataService,
+    public auth: AuthService,
+    private toast: MessageService,
+    public lang: LanguageService,
+  ) {}
 
   ngOnInit(): void {
-    this.clients = this.finance.getClientFinanceSummaries()
-      .sort((a, b) => b.outstanding - a.outstanding);
+    this.refresh();
+  }
+
+  private refresh(): void {
+    this.clients = this.finance.getClientFinanceSummaries().sort((a, b) => b.outstanding - a.outstanding);
   }
 
   get filtered(): ClientFinanceSummary[] {
@@ -89,5 +103,28 @@ export class ClientStatusComponent implements OnInit {
   closeDetail(): void {
     this.showDetail = false;
     this.selectedClient = null;
+  }
+
+  openEditTerms(): void {
+    if (!this.selectedClient) return;
+    this.termsDraft = {
+      creditLimit: this.selectedClient.creditLimit,
+      paymentBehavior: this.selectedClient.paymentBehavior,
+      avgPaymentDays: this.selectedClient.avgPaymentDays,
+    };
+    this.showEditTerms = true;
+  }
+
+  closeEditTerms(): void {
+    this.showEditTerms = false;
+  }
+
+  saveTerms(): void {
+    if (!this.selectedClient) return;
+    this.finance.updateClientFinance(this.selectedClient.customerId, this.termsDraft);
+    this.refresh();
+    this.selectedClient = this.clients.find(c => c.customerId === this.selectedClient!.customerId) ?? null;
+    this.showEditTerms = false;
+    this.toast.add({ severity: 'success', summary: this.lang.t('تم حفظ التعديلات'), detail: this.selectedClient?.customerName, life: 3000 });
   }
 }

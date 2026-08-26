@@ -80,6 +80,7 @@
         <div class="log-top">
           <span class="log-type">{{ a.type | t }}</span>
           <span class="log-date">{{ a.date }}</span>
+          <button class="log-delete" [title]="'حذف' | t" (click)="deleteActivity(a)"><i class="pi pi-trash"></i></button>
         </div>
         <p class="log-notes">{{ a.notes }}</p>
         <span class="log-promise" *ngIf="a.promiseDate">

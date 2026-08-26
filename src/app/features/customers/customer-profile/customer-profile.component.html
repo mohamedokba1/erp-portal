@@ -26,9 +26,17 @@
         <span class="owner-avatar" [style.background]="c.ownerAvatarColor">{{ c.owner.charAt(0) }}</span>
         {{ c.owner }}
       </div>
-      <button class="btn-outline-sm" *ngIf="auth.can('customers.transfer')" (click)="openTransfer()">
-        <i class="pi pi-arrow-right-arrow-left"></i> {{ 'نقل العميل' | t }}
-      </button>
+      <div class="owner-actions">
+        <button class="btn-outline-sm" *ngIf="canEdit()" (click)="openEdit()">
+          <i class="pi pi-pencil"></i> {{ 'تعديل' | t }}
+        </button>
+        <button class="btn-outline-sm" *ngIf="auth.can('customers.transfer')" (click)="openTransfer()">
+          <i class="pi pi-arrow-right-arrow-left"></i> {{ 'نقل العميل' | t }}
+        </button>
+        <button class="btn-outline-sm danger" *ngIf="auth.can('customers.transfer')" (click)="confirmDeleteCustomer()">
+          <i class="pi pi-trash"></i> {{ 'حذف' | t }}
+        </button>
+      </div>
     </div>
   </div>
 
@@ -56,6 +64,11 @@
   <div class="card tabs-card">
     <p-tabView>
       <p-tabPanel [header]="tabHeader('سجل التواصل', activities.length)">
+        <div class="tab-toolbar">
+          <button class="btn-outline-sm" (click)="openAddActivity()">
+            <i class="pi pi-plus"></i> {{ 'إضافة نشاط' | t }}
+          </button>
+        </div>
         <div class="timeline" *ngIf="activities.length; else noActivity">
           <div class="timeline-item" *ngFor="let a of activities">
             <div class="timeline-icon">
@@ -65,6 +78,7 @@
               <div class="timeline-top">
                 <span class="timeline-type">{{ a.type | t }}</span>
                 <span class="timeline-date">{{ a.date }}</span>
+                <button class="timeline-delete" [title]="'حذف' | t" (click)="deleteActivity(a)"><i class="pi pi-trash"></i></button>
               </div>
               <p class="timeline-summary">{{ a.summary }}</p>
               <span class="timeline-by">{{ 'بواسطة' | t }} {{ a.by }}</span>
@@ -158,3 +172,99 @@
     </div>
   </ng-container>
 </p-dialog>
+
+<!-- ============ EDIT CUSTOMER DIALOG ============ -->
+<p-dialog
+  [(visible)]="showEdit"
+  [modal]="true"
+  [style]="{ width: '480px' }"
+  [dismissableMask]="true"
+  [header]="'تعديل بيانات العميل' | t"
+  (onHide)="closeEdit()"
+>
+  <div class="form-grid-1">
+    <div class="field">
+      <label>{{ 'اسم الشركة' | t }}</label>
+      <input type="text" class="form-input" [(ngModel)]="editDraft.name" />
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>{{ 'القطاع / النشاط' | t }}</label>
+        <input type="text" class="form-input" [(ngModel)]="editDraft.sector" />
+      </div>
+      <div class="field">
+        <label>{{ 'المدينة' | t }}</label>
+        <input type="text" class="form-input" [(ngModel)]="editDraft.city" />
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>{{ 'رقم الهاتف' | t }}</label>
+        <input type="text" class="form-input" [(ngModel)]="editDraft.phone" />
+      </div>
+      <div class="field">
+        <label>{{ 'البريد الإلكتروني للعميل' | t }}</label>
+        <input type="email" class="form-input" [(ngModel)]="editDraft.email" />
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>{{ 'التصنيف' | t }}</label>
+        <select class="form-input" [(ngModel)]="editDraft.tier">
+          <option *ngFor="let opt of tierChoices" [value]="opt">{{ opt | t }}</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>{{ 'الحالة' | t }}</label>
+        <select class="form-input" [(ngModel)]="editDraft.status">
+          <option *ngFor="let opt of statusChoices" [value]="opt">{{ opt | t }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-footer">
+    <button class="btn-outline-sm" (click)="closeEdit()">{{ 'إلغاء' | t }}</button>
+    <button class="btn-primary-sm" [disabled]="!isEditValid" (click)="saveEdit()">
+      <i class="pi pi-check"></i> {{ 'حفظ التعديلات' | t }}
+    </button>
+  </div>
+</p-dialog>
+
+<!-- ============ ADD ACTIVITY DIALOG ============ -->
+<p-dialog
+  [(visible)]="showActivity"
+  [modal]="true"
+  [style]="{ width: '440px' }"
+  [dismissableMask]="true"
+  [header]="'إضافة نشاط تواصل' | t"
+  (onHide)="closeAddActivity()"
+>
+  <div class="form-grid-1">
+    <div class="field-row">
+      <div class="field">
+        <label>{{ 'نوع النشاط' | t }}</label>
+        <select class="form-input" [(ngModel)]="activityDraft.type">
+          <option *ngFor="let opt of activityTypes" [value]="opt">{{ opt | t }}</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>{{ 'التاريخ' | t }}</label>
+        <input type="date" class="form-input" [(ngModel)]="activityDraft.date" />
+      </div>
+    </div>
+    <div class="field">
+      <label>{{ 'ملخص النشاط' | t }}</label>
+      <textarea class="form-input" rows="3" [(ngModel)]="activityDraft.summary"></textarea>
+    </div>
+  </div>
+
+  <div class="dialog-footer">
+    <button class="btn-outline-sm" (click)="closeAddActivity()">{{ 'إلغاء' | t }}</button>
+    <button class="btn-primary-sm" [disabled]="!isActivityValid" (click)="saveActivity()">
+      <i class="pi pi-check"></i> {{ 'حفظ' | t }}
+    </button>
+  </div>
+</p-dialog>
+
+<p-confirmDialog></p-confirmDialog>

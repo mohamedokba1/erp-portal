@@ -250,6 +250,37 @@ export class FinanceDataService {
     this.recalcStatus(inv);
   }
 
+  deletePayment(invoiceId: string, paymentId: string): void {
+    const inv = this.invoices.find(i => i.id === invoiceId);
+    if (!inv) return;
+    inv.payments = inv.payments.filter(p => p.id !== paymentId);
+    this.recalcStatus(inv);
+  }
+
+  /** Editing/deleting an invoice outright is only allowed while it's still a draft —
+   *  once issued, the correct way to adjust it is a payment, reminder, or cancellation. */
+  updateInvoice(invoiceId: string, input: {
+    customerId: string; issueDate: string; dueDate: string; paymentTerms: string;
+    items: Omit<InvoiceLineItem, 'id'>[]; notes?: string;
+  }): void {
+    const inv = this.invoices.find(i => i.id === invoiceId);
+    if (!inv || inv.status !== 'مسودة') return;
+    const customer = this.salesData.getCustomerById(input.customerId);
+    inv.customerId = input.customerId;
+    inv.customerName = customer?.name ?? inv.customerName;
+    inv.issueDate = input.issueDate;
+    inv.dueDate = input.dueDate;
+    inv.paymentTerms = input.paymentTerms;
+    inv.notes = input.notes;
+    inv.items = input.items.map((it, idx) => ({ ...it, id: 'ii-' + Date.now() + '-' + idx }));
+  }
+
+  deleteInvoice(invoiceId: string): void {
+    const inv = this.invoices.find(i => i.id === invoiceId);
+    if (!inv || inv.status !== 'مسودة') return;
+    this.invoices = this.invoices.filter(i => i.id !== invoiceId);
+  }
+
   markSent(invoiceId: string): void {
     const inv = this.invoices.find(i => i.id === invoiceId);
     if (!inv || inv.status !== 'مسودة') return;
@@ -338,6 +369,12 @@ export class FinanceDataService {
     return this.getClientFinanceSummaries().find(s => s.customerId === customerId);
   }
 
+  updateClientFinance(customerId: string, changes: {
+    creditLimit: number; paymentBehavior: ClientFinanceSummary['paymentBehavior']; avgPaymentDays: number;
+  }): void {
+    this.clientFinance[customerId] = { customerId, ...changes };
+  }
+
   // ---------- collections ----------
 
   /** Overdue invoices that need collections attention, worst-first. */
@@ -373,5 +410,9 @@ export class FinanceDataService {
       customerId: inv.customerId,
       customerName: inv.customerName,
     });
+  }
+
+  deleteCollectionActivity(activityId: string): void {
+    this.collectionActivities = this.collectionActivities.filter(a => a.id !== activityId);
   }
 }

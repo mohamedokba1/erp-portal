@@ -135,8 +135,36 @@ export class MockDataService {
     customer.ownerAvatarColor = rep?.avatarColor ?? customer.ownerAvatarColor;
   }
 
+  updateCustomer(id: string, changes: {
+    name: string; sector: string; city: string; phone: string; email: string;
+    tier: Customer['tier']; status: Customer['status'];
+  }): void {
+    const customer = this.customers.find(c => c.id === id);
+    if (!customer) return;
+    Object.assign(customer, changes);
+  }
+
+  deleteCustomer(id: string): void {
+    this.customers = this.customers.filter(c => c.id !== id);
+    delete this.activities[id];
+    this.quotes = this.quotes.filter(q => q.customerId !== id);
+    delete this.salesOrders[id];
+  }
+
   getActivitiesForCustomer(customerId: string): CustomerActivity[] {
     return this.activities[customerId] ?? [];
+  }
+
+  private activitySeq = 100;
+
+  addActivity(customerId: string, input: { type: CustomerActivity['type']; date: string; summary: string; by: string }): void {
+    if (!this.activities[customerId]) this.activities[customerId] = [];
+    this.activities[customerId].unshift({ id: 'a-' + (this.activitySeq++) + '-' + Date.now(), ...input });
+  }
+
+  deleteActivity(customerId: string, activityId: string): void {
+    if (!this.activities[customerId]) return;
+    this.activities[customerId] = this.activities[customerId].filter(a => a.id !== activityId);
   }
 
   getQuotesForCustomer(customerId: string): Quote[] {
@@ -177,6 +205,31 @@ export class MockDataService {
     this.quotes.unshift(quote);
     if (customer) customer.openQuotesValue += totalValue;
     return quote;
+  }
+
+  updateQuote(quoteId: string, input: {
+    validUntil: string; discountPercent: number; items: Omit<QuoteLineItem, 'id'>[];
+  }): void {
+    const quote = this.quotes.find(q => q.id === quoteId);
+    if (!quote) return;
+    const customer = this.getCustomerById(quote.customerId);
+    if (customer) customer.openQuotesValue -= quote.totalValue;
+    const totalValue = input.items.reduce((s, i) => s + i.quantity * i.unitPrice * (1 - i.discount / 100), 0);
+    const requiresApproval = input.discountPercent >= 15;
+    quote.validUntil = input.validUntil;
+    quote.discountPercent = input.discountPercent;
+    quote.requiresApproval = requiresApproval;
+    quote.totalValue = totalValue;
+    quote.items = input.items.map((it, idx) => ({ ...it, id: 'qi-' + Date.now() + '-' + idx }));
+    if (customer) customer.openQuotesValue += totalValue;
+  }
+
+  deleteQuote(quoteId: string): void {
+    const quote = this.quotes.find(q => q.id === quoteId);
+    if (!quote) return;
+    const customer = this.getCustomerById(quote.customerId);
+    if (customer) customer.openQuotesValue = Math.max(0, customer.openQuotesValue - quote.totalValue);
+    this.quotes = this.quotes.filter(q => q.id !== quoteId);
   }
 
   approveQuote(quoteId: string): void {

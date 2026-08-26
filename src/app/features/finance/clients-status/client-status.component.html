@@ -96,6 +96,9 @@
         <span class="client-meta">{{ c.customerCode }} · {{ c.sector | t }} · {{ c.city | t }}</span>
       </div>
       <span class="badge" [ngClass]="'badge-' + behaviorBadge(c.paymentBehavior)">{{ c.paymentBehavior | t }}</span>
+      <button class="btn-outline-sm" *ngIf="auth.can('collections.manage')" (click)="openEditTerms()">
+        <i class="pi pi-pencil"></i> {{ 'تعديل الشروط' | t }}
+      </button>
     </div>
 
     <div class="stat-strip">
@@ -142,5 +145,41 @@
         <p>{{ 'لا يوجد فواتير مسجلة لهذا العميل.' | t }}</p>
       </div>
     </ng-template>
+  </ng-container>
+</p-dialog>
+
+<!-- ============ EDIT CREDIT TERMS DIALOG ============ -->
+<p-dialog
+  [(visible)]="showEditTerms"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+  [dismissableMask]="true"
+  [header]="'تعديل شروط الائتمان' | t"
+  (onHide)="closeEditTerms()"
+>
+  <ng-container *ngIf="selectedClient as c">
+    <p class="transfer-line">{{ c.customerName }}</p>
+
+    <div class="field">
+      <label>{{ 'حد الائتمان' | t }}</label>
+      <input type="number" class="form-input" [(ngModel)]="termsDraft.creditLimit" min="0" />
+    </div>
+    <div class="field">
+      <label>{{ 'سلوك السداد' | t }}</label>
+      <select class="form-input" [(ngModel)]="termsDraft.paymentBehavior">
+        <option *ngFor="let opt of behaviorChoices" [value]="opt">{{ opt | t }}</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>{{ 'متوسط أيام السداد' | t }}</label>
+      <input type="number" class="form-input" [(ngModel)]="termsDraft.avgPaymentDays" min="0" />
+    </div>
+
+    <div class="dialog-footer">
+      <button class="btn-outline-sm" (click)="closeEditTerms()">{{ 'إلغاء' | t }}</button>
+      <button class="btn-primary-sm" (click)="saveTerms()">
+        <i class="pi pi-check"></i> {{ 'حفظ التعديلات' | t }}
+      </button>
+    </div>
   </ng-container>
 </p-dialog>

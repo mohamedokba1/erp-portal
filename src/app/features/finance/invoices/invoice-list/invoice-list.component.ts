@@ -47,6 +47,11 @@ export class InvoiceListComponent implements OnInit {
   showCreate = false;
   newInvoice = this.emptyDraft();
 
+  // edit dialog (drafts only)
+  showEdit = false;
+  editTarget: Invoice | null = null;
+  editDraft = this.emptyDraft();
+
   // payment dialog
   showPayment = false;
   paymentTarget: Invoice | null = null;
@@ -163,6 +168,46 @@ export class InvoiceListComponent implements OnInit {
 
   canCancel(): boolean {
     return this.auth.can('invoices.cancel');
+  }
+
+  canEditInvoice(inv: Invoice): boolean {
+    return inv.status === 'مسودة' && this.auth.can('invoices.create');
+  }
+
+  confirmDeleteInvoice(inv: Invoice): void {
+    this.confirm.confirm({
+      header: this.lang.t('حذف الفاتورة'),
+      message: `${this.lang.t('هل أنت متأكد من حذف الفاتورة')} ${inv.invoiceNumber}؟`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: this.lang.t('نعم، حذف'),
+      rejectLabel: this.lang.t('تراجع'),
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.finance.deleteInvoice(inv.id);
+        this.refresh();
+        this.closeDetail();
+        this.toast.add({ severity: 'error', summary: this.lang.t('تم الحذف'), detail: inv.invoiceNumber, life: 3000 });
+      },
+    });
+  }
+
+  confirmDeletePayment(inv: Invoice, paymentId: string): void {
+    this.confirm.confirm({
+      header: this.lang.t('حذف الدفعة'),
+      message: this.lang.t('هل أنت متأكد من حذف هذه الدفعة؟ سيتم تحديث حالة الفاتورة تلقائياً.'),
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: this.lang.t('نعم، حذف'),
+      rejectLabel: this.lang.t('تراجع'),
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.finance.deletePayment(inv.id, paymentId);
+        this.refresh();
+        if (this.selectedInvoice?.id === inv.id) {
+          this.selectedInvoice = this.finance.getInvoiceById(inv.id) ?? null;
+        }
+        this.toast.add({ severity: 'error', summary: this.lang.t('تم حذف الدفعة'), life: 2500 });
+      },
+    });
   }
 
   confirmCancel(inv: Invoice): void {
@@ -289,5 +334,74 @@ export class InvoiceListComponent implements OnInit {
       this.selectedInvoice = this.finance.getInvoiceById(inv.id) ?? null;
     }
     this.toast.add({ severity: 'success', summary: this.lang.t('تم تسجيل الدفعة'), detail: `${inv.invoiceNumber} — ${inv.customerName}`, life: 3500 });
+  }
+
+  // ---------- edit dialog (drafts only) ----------
+  openEditInvoice(inv: Invoice): void {
+    this.editTarget = inv;
+    this.editDraft = {
+      customerId: inv.customerId,
+      issueDate: inv.issueDate,
+      dueDate: inv.dueDate,
+      paymentTerms: inv.paymentTerms,
+      notes: inv.notes ?? '',
+      items: inv.items.map(i => ({ description: i.description, quantity: i.quantity, unitPrice: i.unitPrice, taxPercent: i.taxPercent })),
+    };
+    this.showEdit = true;
+    this.closeDetail();
+  }
+
+  closeEditInvoice(): void {
+    this.showEdit = false;
+    this.editTarget = null;
+  }
+
+  addEditLineItem(): void {
+    this.editDraft.items.push({ description: '', quantity: 1, unitPrice: 0, taxPercent: 14 });
+  }
+
+  removeEditLineItem(idx: number): void {
+    if (this.editDraft.items.length === 1) return;
+    this.editDraft.items.splice(idx, 1);
+  }
+
+  editLineTotal(item: DraftLineItem): number {
+    return item.quantity * item.unitPrice * (1 + item.taxPercent / 100);
+  }
+
+  get editSubtotal(): number {
+    return this.editDraft.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0);
+  }
+
+  get editTax(): number {
+    return this.editDraft.items.reduce((s, i) => s + i.quantity * i.unitPrice * (i.taxPercent / 100), 0);
+  }
+
+  get editTotal(): number {
+    return this.editSubtotal + this.editTax;
+  }
+
+  get isEditValid(): boolean {
+    return (
+      !!this.editDraft.customerId &&
+      !!this.editDraft.dueDate &&
+      this.editDraft.items.every(i => i.description.trim() && i.quantity > 0 && i.unitPrice > 0)
+    );
+  }
+
+  saveInvoiceEdit(): void {
+    if (!this.editTarget || !this.isEditValid) return;
+    this.finance.updateInvoice(this.editTarget.id, {
+      customerId: this.editDraft.customerId,
+      issueDate: this.editDraft.issueDate,
+      dueDate: this.editDraft.dueDate,
+      paymentTerms: this.editDraft.paymentTerms,
+      notes: this.editDraft.notes || undefined,
+      items: this.editDraft.items,
+    });
+    this.refresh();
+    this.showEdit = false;
+    this.toast.add({ severity: 'success', summary: this.lang.t('تم حفظ التعديلات'), detail: this.editTarget.invoiceNumber, life: 3000 });
+    this.editTarget = null;
   }
 }

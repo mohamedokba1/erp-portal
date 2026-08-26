@@ -5,6 +5,7 @@ import { DialogModule } from 'primeng/dialog';
 import { DropdownModule } from 'primeng/dropdown';
 import { MessageService } from 'primeng/api';
 import { FinanceDataService } from '../../../core/data/finance-data.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { CollectionActivity, CollectionActivityType, Invoice } from '../../../core/models/models';
 import { TranslatePipe } from '../../../core/i18n/translate.pipe';
 import { LanguageService } from '../../../core/i18n/language.service';
@@ -32,7 +33,7 @@ export class CollectionsComponent implements OnInit {
     promiseAmount: 0,
   };
 
-  constructor(private finance: FinanceDataService, private toast: MessageService, public lang: LanguageService) {}
+  constructor(private finance: FinanceDataService, public auth: AuthService, private toast: MessageService, public lang: LanguageService) {}
 
   ngOnInit(): void {
     this.refresh();
@@ -90,10 +91,18 @@ export class CollectionsComponent implements OnInit {
       notes: this.form.notes,
       promiseDate: this.form.isPromise ? this.form.promiseDate : undefined,
       promiseAmount: this.form.isPromise ? this.form.promiseAmount : undefined,
-      recordedBy: 'منى الشريف',
+      recordedBy: this.auth.currentUser()?.name ?? '—',
     });
     this.activities = this.finance.getCollectionActivitiesForInvoice(this.selected.id);
     this.form = { type: 'اتصال هاتفي', notes: '', isPromise: false, promiseDate: '', promiseAmount: this.remaining(this.selected) };
     this.toast.add({ severity: 'success', summary: this.lang.t('تم تسجيل المتابعة'), detail: `${this.selected.invoiceNumber} — ${this.selected.customerName}`, life: 3000 });
+  }
+
+  deleteActivity(activity: CollectionActivity): void {
+    this.finance.deleteCollectionActivity(activity.id);
+    if (this.selected) {
+      this.activities = this.finance.getCollectionActivitiesForInvoice(this.selected.id);
+    }
+    this.toast.add({ severity: 'error', summary: this.lang.t('تم الحذف'), life: 2000 });
   }
 }

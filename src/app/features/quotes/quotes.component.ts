@@ -41,6 +41,10 @@ export class QuotesComponent implements OnInit {
   showCreate = false;
   newQuote = this.emptyDraft();
 
+  showEdit = false;
+  editTarget: Quote | null = null;
+  editDraft = this.emptyDraft();
+
   constructor(
     private data: MockDataService,
     public auth: AuthService,
@@ -95,6 +99,21 @@ export class QuotesComponent implements OnInit {
 
   canApprove(quote: Quote): boolean {
     return quote.status === 'بانتظار الاعتماد' && this.auth.can('quotes.approve');
+  }
+
+  private isOwnerOrManager(quote: Quote): boolean {
+    const user = this.auth.currentUser();
+    if (!user) return false;
+    if (user.role === 'admin' || user.role === 'sales_manager') return true;
+    return quote.createdBy === user.name;
+  }
+
+  canEditQuote(quote: Quote): boolean {
+    return (quote.status === 'مسودة' || quote.status === 'مرسل للعميل') && this.isOwnerOrManager(quote);
+  }
+
+  canDeleteQuote(quote: Quote): boolean {
+    return quote.status === 'مسودة' && this.isOwnerOrManager(quote);
   }
 
   approve(quote: Quote, event: Event): void {
@@ -190,5 +209,76 @@ export class QuotesComponent implements OnInit {
     this.refresh();
     this.showCreate = false;
     this.toast.add({ severity: 'success', summary: this.lang.t('تم إنشاء عرض السعر'), detail: `${created.quoteNumber} — ${created.customerName}`, life: 3500 });
+  }
+
+  // ---------- edit dialog ----------
+  openEdit(quote: Quote, event: Event): void {
+    event.stopPropagation();
+    this.editTarget = quote;
+    this.editDraft = {
+      customerId: quote.customerId,
+      validUntil: quote.validUntil,
+      discountPercent: quote.discountPercent,
+      items: quote.items.map(i => ({ productName: i.productName, quantity: i.quantity, unitPrice: i.unitPrice, discount: i.discount })),
+    };
+    this.showEdit = true;
+  }
+
+  closeEdit(): void {
+    this.showEdit = false;
+    this.editTarget = null;
+  }
+
+  addEditLineItem(): void {
+    this.editDraft.items.push({ productName: '', quantity: 1, unitPrice: 0, discount: this.editDraft.discountPercent });
+  }
+
+  removeEditLineItem(idx: number): void {
+    if (this.editDraft.items.length === 1) return;
+    this.editDraft.items.splice(idx, 1);
+  }
+
+  editLineTotal(item: DraftQuoteItem): number {
+    return item.quantity * item.unitPrice * (1 - item.discount / 100);
+  }
+
+  get editTotal(): number {
+    return this.editDraft.items.reduce((s, i) => s + this.editLineTotal(i), 0);
+  }
+
+  get isEditValid(): boolean {
+    return !!this.editDraft.validUntil && this.editDraft.items.every(i => i.productName.trim() && i.quantity > 0 && i.unitPrice > 0);
+  }
+
+  saveEdit(): void {
+    if (!this.editTarget || !this.isEditValid) return;
+    const items = this.editDraft.items.map(i => ({ ...i, discount: this.editDraft.discountPercent }));
+    this.data.updateQuote(this.editTarget.id, {
+      validUntil: this.editDraft.validUntil,
+      discountPercent: this.editDraft.discountPercent,
+      items,
+    });
+    this.refresh();
+    this.showEdit = false;
+    this.toast.add({ severity: 'success', summary: this.lang.t('تم حفظ التعديلات'), detail: this.editTarget.quoteNumber, life: 3000 });
+    this.editTarget = null;
+  }
+
+  // ---------- delete ----------
+  confirmDelete(quote: Quote, event: Event): void {
+    event.stopPropagation();
+    this.confirm.confirm({
+      header: this.lang.t('حذف عرض السعر'),
+      message: `${this.lang.t('هل أنت متأكد من حذف عرض السعر')} ${quote.quoteNumber}؟`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: this.lang.t('نعم، حذف'),
+      rejectLabel: this.lang.t('تراجع'),
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.data.deleteQuote(quote.id);
+        this.refresh();
+        this.toast.add({ severity: 'error', summary: this.lang.t('تم الحذف'), detail: quote.quoteNumber, life: 3000 });
+      },
+    });
   }
 }

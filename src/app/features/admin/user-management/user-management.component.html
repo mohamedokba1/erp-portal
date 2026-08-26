@@ -62,11 +62,13 @@
           {{ (u.active ? 'مفعّل' : 'موقوف') | t }}
         </span>
       </div>
-      <div class="u-cell">
+      <div class="u-cell u-actions">
         <button class="btn-outline-sm" [disabled]="isSelf(u)" (click)="toggleActive(u)">
           <i class="pi" [ngClass]="u.active ? 'pi-lock' : 'pi-lock-open'"></i>
           {{ (u.active ? 'إيقاف' : 'تفعيل') | t }}
         </button>
+        <button class="icon-action" [title]="'تعديل' | t" (click)="openEdit(u)"><i class="pi pi-pencil"></i></button>
+        <button class="icon-action danger" [title]="'حذف' | t" [disabled]="isSelf(u)" (click)="confirmDelete(u)"><i class="pi pi-trash"></i></button>
       </div>
     </div>
   </div>
@@ -151,3 +153,37 @@
     </button>
   </div>
 </p-dialog>
+
+<!-- ============ EDIT USER DIALOG ============ -->
+<p-dialog
+  [(visible)]="showEdit"
+  [modal]="true"
+  [style]="{ width: '440px' }"
+  [dismissableMask]="true"
+  [header]="'تعديل بيانات المستخدم' | t"
+  (onHide)="closeEdit()"
+>
+  <div class="form-grid-1" *ngIf="editTarget">
+    <div class="field">
+      <label>{{ 'الاسم الكامل' | t }}</label>
+      <input type="text" class="form-input" [(ngModel)]="editDraft.name" />
+    </div>
+    <div class="field">
+      <label>{{ 'البريد الإلكتروني' | t }}</label>
+      <input type="email" class="form-input" [(ngModel)]="editDraft.email" />
+    </div>
+    <div class="field">
+      <label>{{ 'كلمة مرور جديدة (اختياري)' | t }}</label>
+      <input type="text" class="form-input" [(ngModel)]="editDraft.password" />
+    </div>
+  </div>
+
+  <div class="dialog-footer">
+    <button class="btn-outline-sm" (click)="closeEdit()">{{ 'إلغاء' | t }}</button>
+    <button class="btn-primary-sm" [disabled]="!isEditValid" (click)="saveEdit()">
+      <i class="pi pi-check"></i> {{ 'حفظ التعديلات' | t }}
+    </button>
+  </div>
+</p-dialog>
+
+<p-confirmDialog></p-confirmDialog>

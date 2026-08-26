@@ -154,4 +154,18 @@ export class AuthService {
   toggleActive(userId: string): void {
     this.users.update(list => list.map(u => u.id === userId ? { ...u, active: !u.active } : u));
   }
+
+  updateUser(userId: string, changes: { name: string; email: string; password?: string }): void {
+    this.users.update(list => list.map(u => u.id === userId
+      ? { ...u, name: changes.name, email: changes.email, password: changes.password || u.password }
+      : u));
+    if (this._currentUser()?.id === userId) {
+      this._currentUser.set(this.users().find(u => u.id === userId) ?? null);
+    }
+  }
+
+  deleteUser(userId: string): void {
+    if (this._currentUser()?.id === userId) return;
+    this.users.update(list => list.filter(u => u.id !== userId));
+  }
 }

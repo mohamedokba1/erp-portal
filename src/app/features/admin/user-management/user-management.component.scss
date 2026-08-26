@@ -71,7 +71,7 @@
 
 .u-row {
   display: grid;
-  grid-template-columns: 2fr 1.1fr 1.3fr 0.9fr 1fr;
+  grid-template-columns: 1.8fr 1fr 1.1fr 0.8fr 1.5fr;
   align-items: center;
   gap: 10px;
   padding: 12px 4px;
@@ -168,6 +168,32 @@
   cursor: pointer;
 
   &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.u-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.icon-action {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  color: var(--slate-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:hover:not(:disabled) { background: var(--slate-50); color: var(--navy-900); }
+  &.danger:hover:not(:disabled) { color: var(--danger-600); border-color: var(--danger-100); }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  i { font-size: 13px; }
 }
 
 // Roles reference

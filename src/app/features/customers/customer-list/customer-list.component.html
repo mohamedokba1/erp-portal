@@ -56,6 +56,7 @@
         <th>{{ 'إجمالي الإيرادات' | t }}</th>
         <th>{{ 'عروض مفتوحة' | t }}</th>
         <th>{{ 'آخر تواصل' | t }}</th>
+        <th></th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-c>
@@ -86,11 +87,19 @@
             {{ c.lastContactDaysAgo | daysAgo }}
           </span>
         </td>
+        <td class="actions-cell" (click)="$event.stopPropagation()">
+          <button class="icon-action" [title]="'تعديل' | t" *ngIf="canEdit(c)" (click)="openEdit(c, $event)">
+            <i class="pi pi-pencil"></i>
+          </button>
+          <button class="icon-action danger" [title]="'حذف' | t" *ngIf="canDelete()" (click)="confirmDelete(c, $event)">
+            <i class="pi pi-trash"></i>
+          </button>
+        </td>
       </tr>
     </ng-template>
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="8" class="empty-state">{{ 'لا يوجد عملاء مطابقين لبحثك.' | t }}</td>
+        <td colspan="9" class="empty-state">{{ 'لا يوجد عملاء مطابقين لبحثك.' | t }}</td>
       </tr>
     </ng-template>
   </p-table>
@@ -144,3 +153,67 @@
     </button>
   </div>
 </p-dialog>
+
+<!-- ============ EDIT CUSTOMER DIALOG ============ -->
+<p-dialog
+  [(visible)]="showEdit"
+  [modal]="true"
+  [style]="{ width: '480px' }"
+  [dismissableMask]="true"
+  [header]="'تعديل بيانات العميل' | t"
+  (onHide)="closeEdit()"
+>
+  <div class="form-grid-1" *ngIf="editTarget">
+    <div class="field">
+      <label>{{ 'اسم الشركة' | t }}</label>
+      <input type="text" class="form-input" [(ngModel)]="editDraft.name" />
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>{{ 'القطاع / النشاط' | t }}</label>
+        <input type="text" class="form-input" [(ngModel)]="editDraft.sector" />
+      </div>
+      <div class="field">
+        <label>{{ 'المدينة' | t }}</label>
+        <input type="text" class="form-input" [(ngModel)]="editDraft.city" />
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>{{ 'رقم الهاتف' | t }}</label>
+        <input type="text" class="form-input" [(ngModel)]="editDraft.phone" />
+      </div>
+      <div class="field">
+        <label>{{ 'البريد الإلكتروني للعميل' | t }}</label>
+        <input type="email" class="form-input" [(ngModel)]="editDraft.email" />
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>{{ 'التصنيف' | t }}</label>
+        <select class="form-input" [(ngModel)]="editDraft.tier">
+          <option *ngFor="let opt of tierChoices" [value]="opt">{{ opt | t }}</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>{{ 'الحالة' | t }}</label>
+        <select class="form-input" [(ngModel)]="editDraft.status">
+          <option *ngFor="let opt of statusChoices" [value]="opt">{{ opt | t }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="field" *ngIf="canManageAny()">
+      <label>{{ 'مندوب المبيعات المسؤول' | t }}</label>
+      <p-dropdown [options]="repNames" [(ngModel)]="editDraft.owner" styleClass="w-full"></p-dropdown>
+    </div>
+  </div>
+
+  <div class="dialog-footer">
+    <button class="btn-outline-sm" (click)="closeEdit()">{{ 'إلغاء' | t }}</button>
+    <button class="btn-primary-sm" [disabled]="!isEditValid" (click)="saveEdit()">
+      <i class="pi pi-check"></i> {{ 'حفظ التعديلات' | t }}
+    </button>
+  </div>
+</p-dialog>
+
+<p-confirmDialog></p-confirmDialog>
