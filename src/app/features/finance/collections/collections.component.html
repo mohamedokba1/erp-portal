@@ -1,0 +1,134 @@
+<div class="page-header">
+  <div>
+    <h1>{{ 'متابعة التحصيل' | t }}</h1>
+    <p class="page-sub">{{ 'قائمة الفواتير المتأخرة وسجل إجراءات التحصيل والمتابعة مع العملاء' | t }}</p>
+  </div>
+</div>
+
+<div class="mini-stats">
+  <div class="mini-stat warn">
+    <span class="mini-stat-value num">{{ totalOverdue() | number }} {{ 'ج.م' | t }}</span>
+    <span class="mini-stat-label">{{ 'إجمالي المتأخرات' | t }}</span>
+  </div>
+  <div class="mini-stat">
+    <span class="mini-stat-value num">{{ queue.length }}</span>
+    <span class="mini-stat-label">{{ 'فواتير بحاجة لمتابعة' | t }}</span>
+  </div>
+  <div class="mini-stat">
+    <span class="mini-stat-value num">{{ openPromisesCount }}</span>
+    <span class="mini-stat-label">{{ 'وعود سداد قائمة' | t }}</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <div>
+      <h3>{{ 'طابور المتابعة' | t }}</h3>
+    </div>
+  </div>
+
+  <div class="queue-list" *ngIf="queue.length; else empty">
+    <div class="q-row" *ngFor="let inv of queue">
+      <div class="q-main">
+        <div class="q-top">
+          <span class="inv-number">{{ inv.invoiceNumber }}</span>
+          <span class="q-customer">{{ inv.customerName }}</span>
+          <span class="dot" [class]="'sev-' + severityClass(daysOverdue(inv))"></span>
+          <span class="days-badge" [ngClass]="'days-' + severityClass(daysOverdue(inv))">
+            {{ daysOverdue(inv) }} {{ 'يوم' | t }}
+          </span>
+        </div>
+        <div class="q-meta">
+          <span class="q-amount num">{{ remaining(inv) | number }} {{ 'ج.م' | t }}</span>
+          <span class="q-sep">·</span>
+          <ng-container *ngIf="lastActivity(inv) as last; else noLast">
+            <span>{{ 'آخر متابعة' | t }}: {{ last.type | t }} — {{ last.date }}</span>
+          </ng-container>
+          <ng-template #noLast>
+            <span class="muted">{{ 'لا توجد متابعة سابقة' | t }}</span>
+          </ng-template>
+        </div>
+      </div>
+      <button class="btn-outline-sm" (click)="openFollowUp(inv)">
+        <i class="pi pi-comments"></i> {{ 'تسجيل متابعة' | t }}
+      </button>
+    </div>
+  </div>
+  <ng-template #empty>
+    <div class="empty-state">{{ 'لا يوجد فواتير متأخرة تحتاج متابعة حالياً 🎉' | t }}</div>
+  </ng-template>
+</div>
+
+<!-- ============ FOLLOW-UP DIALOG ============ -->
+<p-dialog
+  [(visible)]="showFollowUp"
+  [modal]="true"
+  [style]="{ width: '560px' }"
+  [dismissableMask]="true"
+  [header]="'تسجيل متابعة' | t"
+  (onHide)="closeFollowUp()"
+>
+  <ng-container *ngIf="selected as inv">
+    <p class="target-line">
+      {{ inv.invoiceNumber }} — {{ inv.customerName }}
+      <span class="target-remaining">{{ remaining(inv) | number }} {{ 'ج.م' | t }} · {{ daysOverdue(inv) }} {{ 'يوم' | t }}</span>
+    </p>
+
+    <div class="log-section" *ngIf="activities.length">
+      <h4>{{ 'سجل المتابعة' | t }}</h4>
+      <div class="log-row" *ngFor="let a of activities">
+        <div class="log-top">
+          <span class="log-type">{{ a.type | t }}</span>
+          <span class="log-date">{{ a.date }}</span>
+        </div>
+        <p class="log-notes">{{ a.notes }}</p>
+        <span class="log-promise" *ngIf="a.promiseDate">
+          <i class="pi pi-calendar"></i> {{ 'تاريخ الوعد بالسداد' | t }}: {{ a.promiseDate }} — {{ a.promiseAmount | number }} {{ 'ج.م' | t }}
+        </span>
+      </div>
+    </div>
+    <div class="log-empty" *ngIf="!activities.length">
+      <i class="pi pi-inbox"></i>
+      <p>{{ 'لا يوجد إجراءات تحصيل مسجلة لهذه الفاتورة بعد.' | t }}</p>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>{{ 'نوع الإجراء' | t }}</label>
+        <p-dropdown [options]="activityTypes" [(ngModel)]="form.type" styleClass="w-full">
+          <ng-template pTemplate="selectedItem" let-t>{{ t | t }}</ng-template>
+          <ng-template let-t pTemplate="item">{{ t | t }}</ng-template>
+        </p-dropdown>
+      </div>
+      <div class="field checkbox-field">
+        <label class="checkbox-label">
+          <input type="checkbox" [(ngModel)]="form.isPromise" />
+          {{ 'وعد بالسداد؟' | t }}
+        </label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>{{ 'ملاحظات' | t }}</label>
+      <textarea class="form-input" rows="3" [(ngModel)]="form.notes" [placeholder]="'اكتب ملاحظات المكالمة أو الزيارة...' | t"></textarea>
+    </div>
+
+    <div class="form-grid" *ngIf="form.isPromise">
+      <div class="field">
+        <label>{{ 'تاريخ الوعد بالسداد' | t }}</label>
+        <input type="date" class="form-input" [(ngModel)]="form.promiseDate" />
+      </div>
+      <div class="field">
+        <label>{{ 'المبلغ الموعود به' | t }}</label>
+        <input type="number" class="form-input" [(ngModel)]="form.promiseAmount" />
+      </div>
+    </div>
+
+    <div class="dialog-footer">
+      <button class="btn-outline-sm" (click)="closeFollowUp()">{{ 'إلغاء' | t }}</button>
+      <button class="btn-primary-sm" [disabled]="!isFormValid" (click)="saveActivity()">
+        <i class="pi pi-check"></i> {{ 'حفظ المتابعة' | t }}
+      </button>
+    </div>
+  </ng-container>
+</p-dialog>

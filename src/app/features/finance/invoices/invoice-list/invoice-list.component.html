@@ -1,0 +1,310 @@
+<div class="page-header">
+  <div>
+    <h1>{{ 'الفواتير' | t }}</h1>
+    <p class="page-sub">{{ 'إدارة فواتير العملاء، تسجيل الدفعات، ومتابعة حالة السداد' | t }}</p>
+  </div>
+  <button class="btn-primary" (click)="openCreate()"><i class="pi pi-plus"></i> {{ 'فاتورة جديدة' | t }}</button>
+</div>
+
+<div class="mini-stats">
+  <div class="mini-stat">
+    <span class="mini-stat-value num">{{ invoices.length }}</span>
+    <span class="mini-stat-label">{{ 'إجمالي عدد الفواتير' | t }}</span>
+  </div>
+  <div class="mini-stat warn">
+    <span class="mini-stat-value num">{{ overdueCount }}</span>
+    <span class="mini-stat-label">{{ 'فواتير متأخرة السداد' | t }}</span>
+  </div>
+  <div class="mini-stat">
+    <span class="mini-stat-value num">{{ totalOutstanding | number }} {{ 'ج.م' | t }}</span>
+    <span class="mini-stat-label">{{ 'إجمالي المبالغ المستحقة' | t }}</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="pi pi-search"></i>
+      <input type="text" [placeholder]="'ابحث برقم الفاتورة أو اسم العميل...' | t" [(ngModel)]="searchTerm" />
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">{{ 'الحالة' | t }}</span>
+      <div class="chip-group">
+        <button
+          *ngFor="let s of statusOptions"
+          class="chip"
+          [class.active]="statusFilter === s"
+          (click)="statusFilter = s"
+        >{{ s | t }}</button>
+      </div>
+    </div>
+  </div>
+
+  <p-table
+    [value]="filtered"
+    [paginator]="true"
+    [rows]="8"
+    responsiveLayout="scroll"
+    styleClass="p-datatable-sm"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>{{ 'رقم الفاتورة' | t }}</th>
+        <th>{{ 'العميل' | t }}</th>
+        <th>{{ 'تاريخ الإصدار' | t }}</th>
+        <th>{{ 'تاريخ الاستحقاق' | t }}</th>
+        <th>{{ 'الإجمالي' | t }}</th>
+        <th>{{ 'المدفوع' | t }}</th>
+        <th>{{ 'المتبقي' | t }}</th>
+        <th>{{ 'الحالة' | t }}</th>
+        <th></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-inv>
+      <tr class="clickable-row" (click)="openDetail(inv)">
+        <td class="inv-number">{{ inv.invoiceNumber }}</td>
+        <td>{{ inv.customerName }}</td>
+        <td>{{ inv.issueDate }}</td>
+        <td>
+          <span [class.overdue-text]="isOverdue(inv)">{{ inv.dueDate }}</span>
+        </td>
+        <td class="num-cell">{{ total(inv) | number }} {{ 'ج.م' | t }}</td>
+        <td class="num-cell">{{ paid(inv) | number }} {{ 'ج.م' | t }}</td>
+        <td class="num-cell">
+          <span *ngIf="remaining(inv) > 0">{{ remaining(inv) | number }} {{ 'ج.م' | t }}</span>
+          <span *ngIf="remaining(inv) === 0" class="muted">—</span>
+        </td>
+        <td><span class="badge" [ngClass]="'badge-' + statusBadge(inv.status)">{{ inv.status | t }}</span></td>
+        <td class="actions-cell" (click)="$event.stopPropagation()">
+          <button class="icon-action" [title]="'تسجيل دفعة' | t" *ngIf="remaining(inv) > 0 && inv.status !== 'ملغاة'" (click)="openPayment(inv)">
+            <i class="pi pi-money-bill"></i>
+          </button>
+          <button class="icon-action" [title]="'عرض التفاصيل' | t" (click)="openDetail(inv)">
+            <i class="pi pi-eye"></i>
+          </button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="9" class="empty-state">{{ 'لا يوجد فواتير مطابقة.' | t }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- ============ DETAIL DIALOG ============ -->
+<p-dialog
+  [(visible)]="showDetail"
+  [modal]="true"
+  [style]="{ width: '640px' }"
+  [dismissableMask]="true"
+  [header]="'تفاصيل الفاتورة' | t"
+  (onHide)="closeDetail()"
+>
+  <ng-container *ngIf="selectedInvoice as inv">
+    <div class="detail-header">
+      <div>
+        <span class="detail-number">{{ inv.invoiceNumber }}</span>
+        <span class="badge" [ngClass]="'badge-' + statusBadge(inv.status)">{{ inv.status | t }}</span>
+      </div>
+      <div class="detail-dates">
+        <span>{{ 'تاريخ الإصدار:' | t }} {{ inv.issueDate }}</span>
+        <span [class.overdue-text]="isOverdue(inv)">{{ 'تاريخ الاستحقاق:' | t }} {{ inv.dueDate }}</span>
+      </div>
+    </div>
+
+    <div class="detail-client">
+      <span class="detail-client-name">{{ inv.customerName }}</span>
+      <span class="detail-client-meta">{{ inv.paymentTerms | t }} <span *ngIf="inv.relatedOrderNumber"> · {{ 'مرتبطة بـ' | t }} {{ inv.relatedOrderNumber }}</span></span>
+    </div>
+
+    <table class="items-table">
+      <thead>
+        <tr>
+          <th>{{ 'البند' | t }}</th>
+          <th>{{ 'الكمية' | t }}</th>
+          <th>{{ 'سعر الوحدة' | t }}</th>
+          <th>{{ 'الضريبة' | t }}</th>
+          <th>{{ 'الإجمالي' | t }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of inv.items">
+          <td>{{ item.description }}</td>
+          <td class="num">{{ item.quantity }}</td>
+          <td class="num">{{ item.unitPrice | number }}</td>
+          <td class="num">{{ item.taxPercent }}%</td>
+          <td class="num">{{ (item.quantity * item.unitPrice * (1 + item.taxPercent / 100)) | number:'1.0-0' }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="totals-box">
+      <div class="totals-row"><span>{{ 'الإجمالي الفرعي' | t }}</span><span class="num">{{ subtotal(inv) | number:'1.0-0' }} {{ 'ج.م' | t }}</span></div>
+      <div class="totals-row"><span>{{ 'الضريبة' | t }}</span><span class="num">{{ tax(inv) | number:'1.0-0' }} {{ 'ج.م' | t }}</span></div>
+      <div class="totals-row grand"><span>{{ 'الإجمالي' | t }}</span><span class="num">{{ total(inv) | number:'1.0-0' }} {{ 'ج.م' | t }}</span></div>
+      <div class="totals-row paid"><span>{{ 'المدفوع' | t }}</span><span class="num">{{ paid(inv) | number:'1.0-0' }} {{ 'ج.م' | t }}</span></div>
+      <div class="totals-row remaining"><span>{{ 'المتبقي' | t }}</span><span class="num">{{ remaining(inv) | number:'1.0-0' }} {{ 'ج.م' | t }}</span></div>
+    </div>
+
+    <div class="payments-section" *ngIf="inv.payments.length">
+      <h4>{{ 'سجل الدفعات' | t }}</h4>
+      <div class="payment-row" *ngFor="let p of inv.payments">
+        <div class="payment-info">
+          <span class="payment-amount num">{{ p.amount | number }} {{ 'ج.م' | t }}</span>
+          <span class="payment-meta">{{ p.method | t }} · {{ p.date }} · {{ 'مرجع' | t }} {{ p.reference }}</span>
+        </div>
+        <span class="payment-by">{{ p.recordedBy }}</span>
+      </div>
+    </div>
+
+    <p class="detail-notes" *ngIf="inv.notes"><i class="pi pi-info-circle"></i> {{ inv.notes }}</p>
+
+    <div class="detail-actions">
+      <button class="btn-outline-sm" (click)="downloadPdf(inv)"><i class="pi pi-download"></i> {{ 'تحميل PDF' | t }}</button>
+      <button class="btn-outline-sm" (click)="sendReminder(inv)" *ngIf="inv.status !== 'ملغاة' && inv.status !== 'مدفوعة بالكامل'">
+        <i class="pi pi-send"></i> {{ 'إرسال تذكير' | t }}
+      </button>
+      <button class="btn-outline-sm" (click)="markSent(inv)" *ngIf="inv.status === 'مسودة'">
+        <i class="pi pi-check"></i> {{ 'إصدار وإرسال' | t }}
+      </button>
+      <button class="btn-primary-sm" (click)="openPayment(inv)" *ngIf="remaining(inv) > 0 && inv.status !== 'ملغاة'">
+        <i class="pi pi-money-bill"></i> {{ 'تسجيل دفعة' | t }}
+      </button>
+      <button class="btn-danger-sm" (click)="confirmCancel(inv)" *ngIf="canCancel() && inv.status !== 'ملغاة' && inv.status !== 'مدفوعة بالكامل'">
+        <i class="pi pi-times"></i> {{ 'إلغاء الفاتورة' | t }}
+      </button>
+    </div>
+  </ng-container>
+</p-dialog>
+
+<!-- ============ PAYMENT DIALOG ============ -->
+<p-dialog
+  [(visible)]="showPayment"
+  [modal]="true"
+  [style]="{ width: '420px' }"
+  [dismissableMask]="true"
+  [header]="'تسجيل دفعة' | t"
+  (onHide)="closePayment()"
+>
+  <ng-container *ngIf="paymentTarget as inv">
+    <p class="payment-target">
+      {{ inv.invoiceNumber }} — {{ inv.customerName }}
+      <span class="payment-remaining">{{ 'المتبقي:' | t }} {{ remaining(inv) | number }} {{ 'ج.م' | t }}</span>
+    </p>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>{{ 'المبلغ' | t }}</label>
+        <input type="number" class="form-input" [(ngModel)]="paymentForm.amount" [max]="remaining(inv)" min="0" />
+      </div>
+      <div class="field">
+        <label>{{ 'تاريخ الدفعة' | t }}</label>
+        <input type="date" class="form-input" [(ngModel)]="paymentForm.date" />
+      </div>
+      <div class="field">
+        <label>{{ 'طريقة الدفع' | t }}</label>
+        <p-dropdown [options]="paymentMethods" [(ngModel)]="paymentForm.method" styleClass="w-full">
+          <ng-template pTemplate="selectedItem" let-m>{{ m | t }}</ng-template>
+          <ng-template let-m pTemplate="item">{{ m | t }}</ng-template>
+        </p-dropdown>
+      </div>
+      <div class="field">
+        <label>{{ 'الرقم المرجعي' | t }}</label>
+        <input type="text" class="form-input" [(ngModel)]="paymentForm.reference" placeholder="e.g. TRX-12345" />
+      </div>
+    </div>
+
+    <div class="dialog-footer">
+      <button class="btn-outline-sm" (click)="closePayment()">{{ 'إلغاء' | t }}</button>
+      <button class="btn-primary-sm" [disabled]="!isPaymentValid" (click)="savePayment()">
+        <i class="pi pi-check"></i> {{ 'تأكيد الدفعة' | t }}
+      </button>
+    </div>
+  </ng-container>
+</p-dialog>
+
+<!-- ============ CREATE INVOICE DIALOG ============ -->
+<p-dialog
+  [(visible)]="showCreate"
+  [modal]="true"
+  [style]="{ width: '760px' }"
+  [dismissableMask]="true"
+  [header]="'فاتورة جديدة' | t"
+  (onHide)="closeCreate()"
+>
+  <div class="form-grid">
+    <div class="field">
+      <label>{{ 'العميل' | t }}</label>
+      <p-dropdown
+        [options]="customers"
+        optionLabel="name"
+        optionValue="id"
+        [(ngModel)]="newInvoice.customerId"
+        [placeholder]="'اختر العميل' | t"
+        [filter]="true"
+        filterBy="name"
+        styleClass="w-full"
+      ></p-dropdown>
+    </div>
+    <div class="field">
+      <label>{{ 'شروط الدفع' | t }}</label>
+      <input type="text" class="form-input" [(ngModel)]="newInvoice.paymentTerms" />
+    </div>
+    <div class="field">
+      <label>{{ 'تاريخ الإصدار' | t }}</label>
+      <input type="date" class="form-input" [(ngModel)]="newInvoice.issueDate" />
+    </div>
+    <div class="field">
+      <label>{{ 'تاريخ الاستحقاق' | t }}</label>
+      <input type="date" class="form-input" [(ngModel)]="newInvoice.dueDate" />
+    </div>
+  </div>
+
+  <div class="items-editor">
+    <div class="items-editor-head">
+      <span>{{ 'البند' | t }}</span>
+      <span>{{ 'الكمية' | t }}</span>
+      <span>{{ 'سعر الوحدة' | t }}</span>
+      <span>{{ 'الضريبة %' | t }}</span>
+      <span>{{ 'الإجمالي' | t }}</span>
+      <span></span>
+    </div>
+    <div class="items-editor-row" *ngFor="let item of newInvoice.items; let i = index">
+      <input type="text" class="form-input" [(ngModel)]="item.description" [placeholder]="'البند' | t" />
+      <input type="number" class="form-input" [(ngModel)]="item.quantity" min="1" />
+      <input type="number" class="form-input" [(ngModel)]="item.unitPrice" min="0" />
+      <input type="number" class="form-input" [(ngModel)]="item.taxPercent" min="0" max="100" />
+      <span class="num line-total">{{ lineTotal(item) | number:'1.0-0' }}</span>
+      <button class="icon-action danger" (click)="removeLineItem(i)" [disabled]="newInvoice.items.length === 1">
+        <i class="pi pi-trash"></i>
+      </button>
+    </div>
+    <button class="btn-outline-sm add-line" (click)="addLineItem()"><i class="pi pi-plus"></i> {{ 'إضافة بند' | t }}</button>
+  </div>
+
+  <div class="field notes-field">
+    <label>{{ 'ملاحظات (اختياري)' | t }}</label>
+    <textarea class="form-input" rows="2" [(ngModel)]="newInvoice.notes"></textarea>
+  </div>
+
+  <div class="totals-box">
+    <div class="totals-row"><span>{{ 'الإجمالي الفرعي' | t }}</span><span class="num">{{ draftSubtotal | number:'1.0-0' }} {{ 'ج.م' | t }}</span></div>
+    <div class="totals-row"><span>{{ 'الضريبة' | t }}</span><span class="num">{{ draftTax | number:'1.0-0' }} {{ 'ج.م' | t }}</span></div>
+    <div class="totals-row grand"><span>{{ 'الإجمالي' | t }}</span><span class="num">{{ draftTotal | number:'1.0-0' }} {{ 'ج.م' | t }}</span></div>
+  </div>
+
+  <div class="dialog-footer">
+    <button class="btn-outline-sm" (click)="closeCreate()">{{ 'إلغاء' | t }}</button>
+    <button class="btn-outline-sm" [disabled]="!isDraftValid" (click)="saveInvoice(true)">
+      <i class="pi pi-save"></i> {{ 'حفظ كمسودة' | t }}
+    </button>
+    <button class="btn-primary-sm" [disabled]="!isDraftValid" (click)="saveInvoice(false)">
+      <i class="pi pi-send"></i> {{ 'إصدار وإرسال' | t }}
+    </button>
+  </div>
+</p-dialog>
+
+<p-confirmDialog></p-confirmDialog>

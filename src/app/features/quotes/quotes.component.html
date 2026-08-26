@@ -1,0 +1,167 @@
+<div class="page-header">
+  <div>
+    <h1>{{ 'عروض الأسعار' | t }}</h1>
+    <p class="page-sub">{{ 'جميع عروض الأسعار من كل مندوبي المبيعات — أسعار موحدة، اعتماد إلكتروني' | t }}</p>
+  </div>
+  <button class="btn-primary" (click)="openCreate()"><i class="pi pi-plus"></i> {{ 'عرض سعر جديد' | t }}</button>
+</div>
+
+<div class="mini-stats">
+  <div class="mini-stat">
+    <span class="mini-stat-value num">{{ quotes.length }}</span>
+    <span class="mini-stat-label">{{ 'إجمالي العروض هذا الشهر' | t }}</span>
+  </div>
+  <div class="mini-stat warn">
+    <span class="mini-stat-value num">{{ pendingApprovalCount }}</span>
+    <span class="mini-stat-label">{{ 'بانتظار الاعتماد' | t }}</span>
+  </div>
+  <div class="mini-stat">
+    <span class="mini-stat-value num">{{ totalOpenValue | number }} {{ 'ج.م' | t }}</span>
+    <span class="mini-stat-label">{{ 'إجمالي القيمة المفتوحة' | t }}</span>
+  </div>
+</div>
+
+<div class="card">
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="pi pi-search"></i>
+      <input type="text" [placeholder]="'ابحث برقم العرض أو اسم العميل...' | t" [(ngModel)]="searchTerm" />
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">{{ 'الحالة' | t }}</span>
+      <div class="chip-group">
+        <button
+          *ngFor="let s of statusOptions"
+          class="chip"
+          [class.active]="statusFilter === s"
+          (click)="statusFilter = s"
+        >{{ s | t }}</button>
+      </div>
+    </div>
+  </div>
+
+  <p-table
+    [value]="filtered"
+    [paginator]="true"
+    [rows]="8"
+    responsiveLayout="scroll"
+    styleClass="p-datatable-sm"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>{{ 'رقم العرض' | t }}</th>
+        <th>{{ 'العميل' | t }}</th>
+        <th>{{ 'أنشئ بواسطة' | t }}</th>
+        <th>{{ 'تاريخ الإنشاء' | t }}</th>
+        <th>{{ 'ساري حتى' | t }}</th>
+        <th>{{ 'الخصم' | t }}</th>
+        <th>{{ 'القيمة' | t }}</th>
+        <th>{{ 'الحالة' | t }}</th>
+        <th></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-q>
+      <tr class="clickable-row" [routerLink]="['/customers', q.customerId]">
+        <td class="q-number">{{ q.quoteNumber }}</td>
+        <td>{{ q.customerName }}</td>
+        <td>
+          <div class="owner-cell">{{ q.createdBy }}</div>
+        </td>
+        <td>{{ q.createdAt }}</td>
+        <td>{{ q.validUntil }}</td>
+        <td>
+          <span class="discount" [class.high]="q.discountPercent >= 15">{{ q.discountPercent }}%</span>
+        </td>
+        <td class="num-cell">{{ q.totalValue | number }} {{ 'ج.م' | t }}</td>
+        <td>
+          <div class="status-cell">
+            <span class="badge" [ngClass]="'badge-' + statusBadge(q.status)">{{ q.status | t }}</span>
+            <i class="pi pi-shield" *ngIf="q.requiresApproval" [title]="'يتطلب اعتماد مدير' | t"></i>
+          </div>
+        </td>
+        <td class="actions-cell" (click)="$event.stopPropagation()">
+          <ng-container *ngIf="canApprove(q); else waitingBadge">
+            <button class="icon-action success" [title]="'اعتماد' | t" (click)="approve(q, $event)"><i class="pi pi-check"></i></button>
+            <button class="icon-action danger" [title]="'رفض' | t" (click)="reject(q, $event)"><i class="pi pi-times"></i></button>
+          </ng-container>
+          <ng-template #waitingBadge>
+            <span class="waiting-note" *ngIf="q.status === 'بانتظار الاعتماد'">{{ 'بانتظار اعتماد المدير' | t }}</span>
+          </ng-template>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="9" class="empty-state">{{ 'لا يوجد عروض أسعار مطابقة.' | t }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- ============ CREATE QUOTE DIALOG ============ -->
+<p-dialog
+  [(visible)]="showCreate"
+  [modal]="true"
+  [style]="{ width: '760px' }"
+  [dismissableMask]="true"
+  [header]="'إنشاء عرض سعر جديد' | t"
+  (onHide)="closeCreate()"
+>
+  <div class="form-grid">
+    <div class="field">
+      <label>{{ 'العميل' | t }}</label>
+      <p-dropdown
+        [options]="customers"
+        optionLabel="name"
+        optionValue="id"
+        [(ngModel)]="newQuote.customerId"
+        [placeholder]="'اختر العميل' | t"
+        [filter]="true"
+        filterBy="name"
+        styleClass="w-full"
+      ></p-dropdown>
+    </div>
+    <div class="field">
+      <label>{{ 'تاريخ الصلاحية' | t }}</label>
+      <input type="date" class="form-input" [(ngModel)]="newQuote.validUntil" />
+    </div>
+    <div class="field">
+      <label>{{ 'نسبة الخصم %' | t }}</label>
+      <input type="number" class="form-input" [(ngModel)]="newQuote.discountPercent" min="0" max="100" />
+    </div>
+  </div>
+
+  <div class="items-editor">
+    <div class="items-editor-head">
+      <span>{{ 'اسم المنتج / الخدمة' | t }}</span>
+      <span>{{ 'الكمية' | t }}</span>
+      <span>{{ 'سعر الوحدة' | t }}</span>
+      <span>{{ 'الإجمالي' | t }}</span>
+      <span></span>
+    </div>
+    <div class="items-editor-row" *ngFor="let item of newQuote.items; let i = index">
+      <input type="text" class="form-input" [(ngModel)]="item.productName" [placeholder]="'اسم المنتج / الخدمة' | t" />
+      <input type="number" class="form-input" [(ngModel)]="item.quantity" min="1" />
+      <input type="number" class="form-input" [(ngModel)]="item.unitPrice" min="0" />
+      <span class="num line-total">{{ lineTotal(item) | number:'1.0-0' }}</span>
+      <button class="icon-action danger" (click)="removeLineItem(i)" [disabled]="newQuote.items.length === 1">
+        <i class="pi pi-trash"></i>
+      </button>
+    </div>
+    <button class="btn-outline-sm add-line" (click)="addLineItem()"><i class="pi pi-plus"></i> {{ 'إضافة بند' | t }}</button>
+  </div>
+
+  <div class="totals-box">
+    <div class="totals-row grand"><span>{{ 'الإجمالي' | t }}</span><span class="num">{{ draftTotal | number:'1.0-0' }} {{ 'ج.م' | t }}</span></div>
+  </div>
+
+  <div class="dialog-footer">
+    <button class="btn-outline-sm" (click)="closeCreate()">{{ 'إلغاء' | t }}</button>
+    <button class="btn-primary-sm" [disabled]="!isDraftValid" (click)="saveQuote()">
+      <i class="pi pi-check"></i> {{ 'حفظ العرض' | t }}
+    </button>
+  </div>
+</p-dialog>
+
+<p-confirmDialog></p-confirmDialog>

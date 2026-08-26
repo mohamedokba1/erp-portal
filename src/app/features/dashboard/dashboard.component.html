@@ -1,0 +1,104 @@
+<div class="page-header">
+  <div>
+    <h1>{{ 'لوحة مؤشرات المبيعات' | t }}</h1>
+    <p class="page-sub">{{ 'نظرة عامة على أداء المبيعات اليومي والشهري — محدّث حتى اليوم، 19 أغسطس 2026' | t }}</p>
+  </div>
+  <div class="header-actions">
+    <button class="btn-outline"><i class="pi pi-calendar"></i> {{ 'هذا الشهر' | t }}</button>
+    <button class="btn-primary" routerLink="/quotes"><i class="pi pi-plus"></i> {{ 'عرض سعر جديد' | t }}</button>
+  </div>
+</div>
+
+<!-- KPI Strip -->
+<div class="kpi-grid">
+  <app-kpi-card *ngFor="let k of kpis" [kpi]="k"></app-kpi-card>
+</div>
+
+<div class="content-grid">
+  <!-- Sales chart -->
+  <div class="card chart-card">
+    <div class="card-header">
+      <div>
+        <h3>{{ 'اتجاه المبيعات الشهري' | t }}</h3>
+        <span class="card-sub">{{ 'مقارنة الفعلي بالمستهدف (بالمليون جنيه)' | t }}</span>
+      </div>
+    </div>
+    <div class="chart-wrap">
+      <canvas #salesChart></canvas>
+    </div>
+  </div>
+
+  <!-- Follow-up alerts -->
+  <div class="card alerts-card">
+    <div class="card-header">
+      <div>
+        <h3>{{ 'عملاء بحاجة لمتابعة' | t }}</h3>
+        <span class="card-sub">{{ 'مرتبة حسب الأولوية' | t }}</span>
+      </div>
+      <span class="badge badge-danger">{{ alerts.length }}</span>
+    </div>
+    <div class="alert-list">
+      <a class="alert-item" *ngFor="let a of alerts" [routerLink]="['/customers', a.customerId]">
+        <span class="dot" [class]="'sev-' + a.severity"></span>
+        <div class="alert-body">
+          <span class="alert-name">{{ a.customerName }}</span>
+          <span class="alert-reason">{{ a.reason | t }}</span>
+        </div>
+        <span class="alert-days">{{ a.daysOverdue }} {{ 'يوم' | t }}</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="content-grid content-grid-2">
+  <!-- Rep leaderboard -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3>{{ 'أداء فريق المبيعات' | t }}</h3>
+        <span class="card-sub">{{ 'نسبة تحقيق المستهدف الشهري لكل مندوب' | t }}</span>
+      </div>
+    </div>
+    <div class="rep-list">
+      <div class="rep-row" *ngFor="let r of reps">
+        <div class="rep-avatar" [style.background]="r.avatarColor">{{ r.name.charAt(0) }}</div>
+        <div class="rep-info">
+          <div class="rep-top">
+            <span class="rep-name">{{ r.name }}</span>
+            <span class="rep-pct num">{{ repProgress(r) }}%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" [style.width.%]="repProgress(r)" [style.background]="r.avatarColor"></div>
+          </div>
+          <div class="rep-meta">
+            <span class="num">{{ r.achieved | number }} {{ 'ج.م' | t }}</span>
+            <span class="sep">{{ 'من' | t }}</span>
+            <span class="num">{{ r.target | number }} {{ 'ج.م' | t }}</span>
+            <span class="deals">· {{ r.dealsWon }} {{ 'صفقة' | t }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent quotes -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3>{{ 'أحدث عروض الأسعار' | t }}</h3>
+        <span class="card-sub">{{ 'آخر 5 عروض تم إنشاؤها' | t }}</span>
+      </div>
+      <a routerLink="/quotes" class="link-more">{{ 'عرض الكل' | t }} <i class="pi pi-arrow-left"></i></a>
+    </div>
+    <div class="quote-list">
+      <a class="quote-row" *ngFor="let q of recentQuotes" [routerLink]="['/customers', q.customerId]">
+        <div class="quote-info">
+          <span class="quote-number">{{ q.quoteNumber }}</span>
+          <span class="quote-customer">{{ q.customerName }}</span>
+        </div>
+        <span class="quote-value num">{{ q.totalValue | number }} {{ 'ج.م' | t }}</span>
+        <span class="badge" [ngClass]="'badge-' + quoteStatusBadge(q.status)">{{ q.status | t }}</span>
+      </a>
+    </div>
+  </div>
+</div>

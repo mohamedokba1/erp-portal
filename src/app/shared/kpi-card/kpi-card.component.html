@@ -1,0 +1,20 @@
+<div class="kpi-card">
+  <div class="kpi-top">
+    <div class="kpi-icon" [style.background]="accentColor">
+      <i class="pi" [ngClass]="kpi.icon"></i>
+    </div>
+    <div class="kpi-delta" [class.positive]="isPositive" [class.negative]="!isPositive">
+      <i class="pi" [ngClass]="isPositive ? 'pi-arrow-up-right' : 'pi-arrow-down-right'"></i>
+      {{ isPositive ? '+' : '' }}{{ kpi.delta }}%
+    </div>
+  </div>
+
+  <div class="kpi-value num">{{ kpi.value }}</div>
+  <div class="kpi-label">{{ kpi.label | t }}</div>
+
+  <div class="kpi-spark">
+    <app-sparkline [data]="kpi.trend" [color]="accentColor"></app-sparkline>
+  </div>
+
+  <div class="kpi-delta-label">{{ kpi.deltaLabel | t }}</div>
+</div>

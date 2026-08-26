@@ -1,0 +1,368 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.login-screen {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+// ============ BRAND PANEL ============
+.brand-panel {
+  flex: 1.1;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(63, 122, 176, 0.25), transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(27, 138, 90, 0.18), transparent 40%),
+    linear-gradient(160deg, var(--navy-900) 0%, var(--navy-950) 100%);
+  display: flex;
+  align-items: center;
+  padding: 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.brand-panel-inner {
+  max-width: 460px;
+  position: relative;
+  z-index: 1;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 56px;
+}
+
+.brand-mark {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--steel-500), var(--steel-600));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 19px;
+  flex-shrink: 0;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.brand-name {
+  color: white;
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.brand-sub {
+  color: var(--steel-400);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pitch-title {
+  color: white;
+  font-size: 30px;
+  line-height: 1.35;
+  margin: 0 0 14px;
+  letter-spacing: -0.01em;
+}
+
+.pitch-sub {
+  color: #a9bdd4;
+  font-size: 14.5px;
+  line-height: 1.7;
+  margin: 0 0 44px;
+}
+
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.feature-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+
+  i {
+    color: #6fcf9e;
+    font-size: 17px;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+}
+
+.feature-title {
+  display: block;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.feature-desc {
+  display: block;
+  color: #7b93b0;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+// ============ FORM PANEL ============
+.form-panel {
+  flex: 1;
+  background: var(--surface-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  overflow-y: auto;
+}
+
+.form-wrap {
+  width: 100%;
+  max-width: 380px;
+}
+
+.form-header {
+  margin-bottom: 30px;
+  position: relative;
+
+  h2 {
+    font-size: 24px;
+    margin-bottom: 6px;
+  }
+
+  p {
+    margin: 0;
+    color: var(--slate-500);
+    font-size: 13.5px;
+  }
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.field label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--slate-600);
+}
+
+.input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-card);
+  border: 1px solid var(--slate-300);
+  border-radius: 8px;
+  padding: 12px 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus-within {
+    border-color: var(--steel-500);
+    box-shadow: 0 0 0 3px rgba(63, 122, 176, 0.15);
+  }
+
+  i:first-child {
+    color: var(--slate-400);
+    font-size: 14px;
+  }
+
+  input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 13.5px;
+    font-family: var(--font-ui);
+    color: var(--slate-800);
+    width: 100%;
+
+    &::placeholder { color: var(--slate-400); }
+  }
+}
+
+.toggle-visibility {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--slate-400);
+  padding: 0;
+  display: flex;
+
+  &:hover { color: var(--slate-600); }
+}
+
+.error-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--danger-100);
+  color: var(--danger-600);
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-radius: 8px;
+
+  i { font-size: 13px; }
+}
+
+.btn-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--navy-900);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 13px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  margin-top: 4px;
+
+  &:hover:not(:disabled) { background: var(--navy-800); }
+  &:disabled { opacity: 0.7; cursor: wait; }
+}
+
+.loading-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 26px 0 18px;
+  color: var(--slate-400);
+  font-size: 11.5px;
+  font-weight: 600;
+
+  &::before, &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--surface-border);
+  }
+
+  span { padding: 0 12px; white-space: nowrap; }
+}
+
+.demo-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.demo-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  cursor: pointer;
+  text-align: right;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:hover {
+    border-color: var(--steel-500);
+    background: var(--slate-50);
+  }
+}
+
+.demo-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  i { font-size: 14px; }
+}
+
+.demo-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.demo-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--slate-800);
+}
+
+.demo-role {
+  font-size: 11.5px;
+  color: var(--slate-500);
+}
+
+.demo-arrow {
+  color: var(--slate-300);
+  font-size: 12px;
+}
+
+.demo-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 18px 0 0;
+  font-size: 11.5px;
+  color: var(--slate-400);
+  line-height: 1.6;
+
+  i { font-size: 12px; margin-top: 2px; flex-shrink: 0; }
+}
+
+.lang-toggle {
+  position: absolute;
+  top: 2px;
+  inset-inline-end: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 999px;
+  padding: 6px 13px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--slate-600);
+  cursor: pointer;
+
+  &:hover { background: var(--slate-50); border-color: var(--slate-300); }
+  i { font-size: 12px; }
+}
+
+@media (max-width: 900px) {
+  .brand-panel { display: none; }
+}

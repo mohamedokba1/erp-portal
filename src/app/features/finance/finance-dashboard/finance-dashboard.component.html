@@ -1,0 +1,96 @@
+<div class="page-header">
+  <div>
+    <h1>{{ 'لوحة مؤشرات الحسابات' | t }}</h1>
+    <p class="page-sub">{{ 'نظرة عامة على الفواتير والتحصيل وحالة العملاء الائتمانية — محدّث حتى اليوم، 21 أغسطس 2026' | t }}</p>
+  </div>
+  <div class="header-actions">
+    <button class="btn-outline" routerLink="/finance/clients"><i class="pi pi-users"></i> {{ 'حالة العملاء' | t }}</button>
+    <button class="btn-primary" routerLink="/finance/invoices"><i class="pi pi-plus"></i> {{ 'فاتورة جديدة' | t }}</button>
+  </div>
+</div>
+
+<!-- KPI Strip -->
+<div class="kpi-grid">
+  <app-kpi-card *ngFor="let k of kpis" [kpi]="k"></app-kpi-card>
+</div>
+
+<div class="content-grid">
+  <!-- Invoiced vs collected chart -->
+  <div class="card chart-card">
+    <div class="card-header">
+      <div>
+        <h3>{{ 'الفواتير الصادرة مقابل التحصيل الفعلي' | t }}</h3>
+        <span class="card-sub">{{ 'بالمليون جنيه — آخر 8 أشهر' | t }}</span>
+      </div>
+    </div>
+    <div class="chart-wrap">
+      <canvas #financeChart></canvas>
+    </div>
+  </div>
+
+  <!-- Aging -->
+  <div class="card aging-card">
+    <div class="card-header">
+      <div>
+        <h3>{{ 'أعمار الديون المتأخرة' | t }}</h3>
+        <span class="card-sub">{{ 'المبالغ المتأخرة حسب المدة' | t }}</span>
+      </div>
+    </div>
+    <div class="aging-list">
+      <div class="aging-row" *ngFor="let a of aging; let i = index">
+        <div class="aging-top">
+          <span class="aging-label">{{ a.label | t }}</span>
+          <span class="aging-value num">{{ a.amount | number }} {{ 'ج.م' | t }}</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" [class]="'fill-' + agingSeverity(i)" [style.width.%]="(a.amount / maxAging()) * 100"></div>
+        </div>
+        <span class="aging-count">{{ a.count }} {{ 'فاتورة' | t }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="content-grid content-grid-2">
+  <!-- Top overdue clients -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3>{{ 'أعلى العملاء تأخراً في السداد' | t }}</h3>
+        <span class="card-sub">{{ 'مرتبة حسب المبلغ المتأخر' | t }}</span>
+      </div>
+      <a routerLink="/finance/clients" class="link-more">{{ 'عرض الكل' | t }} <i class="pi pi-arrow-left"></i></a>
+    </div>
+    <div class="overdue-list">
+      <div class="overdue-row" *ngFor="let c of topOverdueClients">
+        <div class="overdue-info">
+          <span class="overdue-name">{{ c.customerName }}</span>
+          <span class="overdue-meta">{{ c.paymentBehavior | t }} · {{ avgPaymentLabel(c.avgPaymentDays) }}</span>
+        </div>
+        <span class="overdue-amount num">{{ c.overdueAmount | number }} {{ 'ج.م' | t }}</span>
+      </div>
+      <div class="empty-state" *ngIf="!topOverdueClients.length">{{ 'لا يوجد عملاء متأخرين في السداد حالياً.' | t }}</div>
+    </div>
+  </div>
+
+  <!-- Recent invoices -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3>{{ 'أحدث الفواتير' | t }}</h3>
+        <span class="card-sub">{{ 'آخر 5 فواتير تم إصدارها' | t }}</span>
+      </div>
+      <a routerLink="/finance/invoices" class="link-more">{{ 'عرض الكل' | t }} <i class="pi pi-arrow-left"></i></a>
+    </div>
+    <div class="invoice-list">
+      <a class="invoice-row" *ngFor="let inv of recentInvoices" routerLink="/finance/invoices">
+        <div class="invoice-info">
+          <span class="invoice-number">{{ inv.invoiceNumber }}</span>
+          <span class="invoice-customer">{{ inv.customerName }}</span>
+        </div>
+        <span class="invoice-value num">{{ total(inv) | number }} {{ 'ج.م' | t }}</span>
+        <span class="badge" [ngClass]="'badge-' + statusBadge(inv.status)">{{ inv.status | t }}</span>
+      </a>
+    </div>
+  </div>
+</div>

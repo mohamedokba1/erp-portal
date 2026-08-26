@@ -1,0 +1,146 @@
+<div class="page-header">
+  <div>
+    <h1>{{ 'العملاء' | t }}</h1>
+    <p class="page-sub">{{ 'قاعدة بيانات موحدة لكل عملاء الشركة' | t }} — {{ customers.length }} {{ 'عميل' | t }}</p>
+  </div>
+  <button class="btn-primary" (click)="openCreate()"><i class="pi pi-plus"></i> {{ 'عميل جديد' | t }}</button>
+</div>
+
+<div class="card">
+  <div class="toolbar">
+    <div class="search-box">
+      <i class="pi pi-search"></i>
+      <input type="text" [placeholder]="'ابحث بالاسم، الكود، أو المندوب...' | t" [(ngModel)]="searchTerm" />
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">{{ 'التصنيف' | t }}</span>
+      <div class="chip-group">
+        <button
+          *ngFor="let t of tierOptions"
+          class="chip"
+          [class.active]="tierFilter === t"
+          (click)="tierFilter = t"
+        >{{ t | t }}</button>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">{{ 'الحالة' | t }}</span>
+      <div class="chip-group">
+        <button
+          *ngFor="let s of statusOptions"
+          class="chip"
+          [class.active]="statusFilter === s"
+          (click)="statusFilter = s"
+        >{{ s | t }}</button>
+      </div>
+    </div>
+  </div>
+
+  <p-table
+    [value]="filtered"
+    [paginator]="true"
+    [rows]="8"
+    [rowsPerPageOptions]="[8, 16, 24]"
+    responsiveLayout="scroll"
+    styleClass="p-datatable-sm"
+  >
+    <ng-template pTemplate="header">
+      <tr>
+        <th>{{ 'العميل' | t }}</th>
+        <th>{{ 'القطاع' | t }}</th>
+        <th>{{ 'التصنيف' | t }}</th>
+        <th>{{ 'الحالة' | t }}</th>
+        <th>{{ 'مندوب المبيعات' | t }}</th>
+        <th>{{ 'إجمالي الإيرادات' | t }}</th>
+        <th>{{ 'عروض مفتوحة' | t }}</th>
+        <th>{{ 'آخر تواصل' | t }}</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-c>
+      <tr class="clickable-row" [routerLink]="['/customers', c.id]">
+        <td>
+          <div class="cust-cell">
+            <span class="cust-name">{{ c.name }}</span>
+            <span class="cust-code">{{ c.code }} · {{ c.city | t }}</span>
+          </div>
+        </td>
+        <td>{{ c.sector | t }}</td>
+        <td><span class="badge" [ngClass]="'badge-' + tierBadge(c.tier)">{{ c.tier | t }}</span></td>
+        <td><span class="badge" [ngClass]="'badge-' + statusBadge(c.status)">{{ c.status | t }}</span></td>
+        <td>
+          <div class="owner-cell">
+            <span class="owner-avatar" [style.background]="c.ownerAvatarColor">{{ c.owner.charAt(0) }}</span>
+            {{ c.owner }}
+          </div>
+        </td>
+        <td class="num-cell">{{ c.totalRevenue | number }} {{ 'ج.م' | t }}</td>
+        <td class="num-cell">
+          <span *ngIf="c.openQuotesValue > 0">{{ c.openQuotesValue | number }} {{ 'ج.م' | t }}</span>
+          <span *ngIf="c.openQuotesValue === 0" class="muted">—</span>
+        </td>
+        <td>
+          <span class="last-contact" [ngClass]="'lc-' + lastContactClass(c.lastContactDaysAgo)">
+            <span class="dot"></span>
+            {{ c.lastContactDaysAgo | daysAgo }}
+          </span>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="8" class="empty-state">{{ 'لا يوجد عملاء مطابقين لبحثك.' | t }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- ============ CREATE CUSTOMER DIALOG ============ -->
+<p-dialog
+  [(visible)]="showCreate"
+  [modal]="true"
+  [style]="{ width: '480px' }"
+  [dismissableMask]="true"
+  [header]="'إنشاء عميل جديد' | t"
+  (onHide)="closeCreate()"
+>
+  <div class="form-grid-1">
+    <div class="field">
+      <label>{{ 'اسم الشركة' | t }}</label>
+      <input type="text" class="form-input" [(ngModel)]="newCustomer.name" />
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>{{ 'القطاع / النشاط' | t }}</label>
+        <input type="text" class="form-input" [(ngModel)]="newCustomer.sector" />
+      </div>
+      <div class="field">
+        <label>{{ 'المدينة' | t }}</label>
+        <input type="text" class="form-input" [(ngModel)]="newCustomer.city" />
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>{{ 'رقم الهاتف' | t }}</label>
+        <input type="text" class="form-input" [(ngModel)]="newCustomer.phone" />
+      </div>
+      <div class="field">
+        <label>{{ 'البريد الإلكتروني للعميل' | t }}</label>
+        <input type="email" class="form-input" [(ngModel)]="newCustomer.email" />
+      </div>
+    </div>
+    <div class="field">
+      <label>{{ 'مندوب المبيعات المسؤول' | t }}</label>
+      <p-dropdown [options]="repNames" [(ngModel)]="newCustomer.owner" styleClass="w-full"
+        [disabled]="auth.currentUser()?.role === 'sales'"></p-dropdown>
+    </div>
+  </div>
+
+  <div class="dialog-footer">
+    <button class="btn-outline-sm" (click)="closeCreate()">{{ 'إلغاء' | t }}</button>
+    <button class="btn-primary-sm" [disabled]="!isCreateValid" (click)="saveCustomer()">
+      <i class="pi pi-check"></i> {{ 'حفظ العميل' | t }}
+    </button>
+  </div>
+</p-dialog>

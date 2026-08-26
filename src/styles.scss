@@ -1,0 +1,462 @@
+@import "primeicons/primeicons.css";
+
+// ============================================
+// DESIGN TOKENS — Corporate ERP Theme
+// ============================================
+:root {
+  // Core palette
+  --navy-950: #0a1c30;
+  --navy-900: #0f2a4a;
+  --navy-800: #163a63;
+  --navy-700: #1e4a7d;
+  --steel-600: #2c5f8a;
+  --steel-500: #3f7ab0;
+  --steel-400: #6b9cc9;
+
+  // Neutrals
+  --slate-50: #f5f7fa;
+  --slate-100: #eef1f5;
+  --slate-200: #e2e7ee;
+  --slate-300: #cbd3de;
+  --slate-400: #9aa7b8;
+  --slate-500: #6b7789;
+  --slate-600: #4a5568;
+  --slate-700: #333f52;
+  --slate-800: #202a3b;
+  --white: #ffffff;
+
+  // Semantic
+  --success-600: #1b8a5a;
+  --success-100: #e3f5ec;
+  --warning-600: #c77d1d;
+  --warning-100: #faeed9;
+  --danger-600: #b0342a;
+  --danger-100: #fbe6e4;
+  --info-600: #2c5f8a;
+  --info-100: #e5eef6;
+
+  // Surfaces
+  --surface-bg: var(--slate-50);
+  --surface-card: var(--white);
+  --surface-border: var(--slate-200);
+
+  // Typography
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  // Radii & shadows
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-card: 0 1px 2px rgba(15, 42, 74, 0.06), 0 1px 8px rgba(15, 42, 74, 0.04);
+  --shadow-elevated: 0 4px 16px rgba(15, 42, 74, 0.10), 0 2px 4px rgba(15, 42, 74, 0.06);
+
+  // Layout
+  --sidebar-width: 264px;
+  --header-height: 64px;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-ui);
+  background: var(--surface-bg);
+  color: var(--slate-800);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.num, .p-datatable-tbody td.num-cell {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+h1, h2, h3, h4, h5 {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--navy-900);
+}
+
+a { color: inherit; text-decoration: none; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--slate-300); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: var(--slate-400); }
+
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--steel-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// ============================================
+// Shared utility classes
+// ============================================
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge-success { background: var(--success-100); color: var(--success-600); }
+.badge-warning { background: var(--warning-100); color: var(--warning-600); }
+.badge-danger  { background: var(--danger-100);  color: var(--danger-600); }
+.badge-info    { background: var(--info-100);    color: var(--info-600); }
+.badge-neutral { background: var(--slate-100);   color: var(--slate-600); }
+
+.dot {
+  width: 7px; height: 7px; border-radius: 50%; display: inline-block;
+}
+
+// ============================================
+// PrimeNG overrides — align to token system
+// ============================================
+.p-component {
+  font-family: var(--font-ui);
+}
+
+.p-datatable {
+  .p-datatable-thead > tr > th {
+    background: var(--slate-50);
+    color: var(--slate-600);
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-color: var(--surface-border);
+    padding: 12px 16px;
+  }
+  .p-datatable-tbody > tr {
+    > td {
+      padding: 13px 16px;
+      border-color: var(--surface-border);
+      color: var(--slate-700);
+      font-size: 13.5px;
+    }
+    &:hover > td {
+      background: var(--slate-50);
+    }
+  }
+  .p-paginator {
+    background: transparent;
+    border: none;
+    padding-top: 12px;
+  }
+}
+
+.p-inputtext, .p-dropdown, .p-multiselect {
+  border-radius: var(--radius-sm);
+  border-color: var(--slate-300);
+  font-size: 13.5px;
+}
+.p-inputtext:enabled:focus, .p-dropdown:not(.p-disabled).p-focus {
+  border-color: var(--steel-500);
+  box-shadow: 0 0 0 3px rgba(63, 122, 176, 0.15);
+}
+
+.p-button {
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 9px 16px;
+}
+.p-button.p-button-primary {
+  background: var(--navy-900);
+  border-color: var(--navy-900);
+}
+.p-button.p-button-primary:enabled:hover {
+  background: var(--navy-800);
+  border-color: var(--navy-800);
+}
+.p-button.p-button-outlined {
+  color: var(--navy-900);
+  border-color: var(--slate-300);
+}
+.p-button.p-button-outlined:enabled:hover {
+  background: var(--slate-50);
+}
+.p-button.p-button-danger {
+  background: var(--danger-600);
+  border-color: var(--danger-600);
+  color: white;
+}
+.p-button.p-button-danger:enabled:hover {
+  background: #932a22;
+  border-color: #932a22;
+}
+.p-button.p-button-text {
+  background: transparent;
+  color: var(--slate-600);
+}
+.p-button.p-button-text:enabled:hover {
+  background: var(--slate-100);
+}
+
+.p-tabview .p-tabview-nav {
+  border-color: var(--surface-border);
+}
+.p-tabview .p-tabview-nav li .p-tabview-nav-link {
+  border-color: transparent;
+  color: var(--slate-500);
+  font-weight: 600;
+  font-size: 13.5px;
+  padding: 12px 4px;
+  margin-inline-end: 28px;
+  background: transparent;
+}
+.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  color: var(--navy-900);
+  border-color: var(--navy-900);
+}
+.p-tabview .p-tabview-panels { background: transparent; padding: 20px 0 0; }
+
+.p-tag {
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 11.5px;
+}
+
+.p-dialog .p-dialog-header {
+  padding: 20px 24px;
+}
+.p-dialog .p-dialog-content {
+  padding: 0 24px 24px;
+}
+
+.p-progressbar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--slate-100);
+}
+
+// ============================================
+// PrimeNG overlay components — Dialog / ConfirmDialog / Select / Toast
+// (PrimeNG 18 ships no default theme CSS; these components render fully
+// transparent/unstyled unless we style them explicitly, same as the
+// table/tabview overrides above.)
+// ============================================
+.p-dialog-mask {
+  background: rgba(10, 28, 48, 0.5) !important;
+}
+
+.p-dialog {
+  background: var(--surface-card) !important;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated);
+  max-width: 92vw;
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+.p-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.p-dialog-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--navy-900);
+  letter-spacing: -0.01em;
+}
+
+.p-dialog-content {
+  overflow-y: auto;
+  color: var(--slate-700);
+  font-size: 13.5px;
+}
+
+.p-dialog-footer {
+  padding: 0 24px 22px;
+}
+
+.p-dialog-close-button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--slate-100) !important;
+  color: var(--slate-500);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:hover { background: var(--slate-200) !important; color: var(--navy-900); }
+  svg { width: 13px; height: 13px; }
+}
+
+// ConfirmDialog reuses .p-dialog structurally, plus its own icon/message
+.p-confirmdialog {
+  width: 420px;
+}
+
+.p-confirmdialog-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding-top: 6px;
+}
+
+.p-confirmdialog-icon {
+  color: var(--warning-600);
+  font-size: 22px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.p-confirmdialog-message {
+  font-size: 13.5px;
+  color: var(--slate-700);
+  line-height: 1.6;
+}
+
+// Select / Dropdown overlay panel (PrimeNG 18 "p-select" + legacy "p-dropdown" aliases)
+.p-select-overlay, .p-dropdown-panel {
+  position: absolute;
+  z-index: 1100;
+  background: var(--surface-card) !important;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-elevated);
+  overflow: hidden;
+}
+
+.p-select-header {
+  padding: 8px;
+  border-bottom: 1px solid var(--surface-border);
+
+  .p-inputtext { width: 100%; }
+}
+
+.p-select-list, .p-dropdown-items {
+  padding: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 0;
+  list-style: none;
+}
+
+.p-select-option, .p-dropdown-item {
+  padding: 9px 12px;
+  border-radius: 7px;
+  font-size: 13px;
+  color: var(--slate-700);
+  cursor: pointer;
+
+  &:hover, &.p-focus { background: var(--slate-50) !important; }
+  &.p-select-option-selected { background: var(--info-100) !important; color: var(--steel-600); font-weight: 600; }
+}
+
+.p-select-empty-message, .p-dropdown-empty-message {
+  padding: 14px;
+  text-align: center;
+  color: var(--slate-400);
+  font-size: 12.5px;
+}
+
+// Toast
+.p-toast {
+  width: 360px;
+  max-width: 90vw;
+}
+
+.p-toast-message {
+  display: flex;
+  background: var(--surface-card) !important;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-elevated);
+  border-inline-start: 4px solid var(--info-600);
+  margin-bottom: 10px;
+  overflow: hidden;
+
+  &.p-toast-message-success { border-inline-start-color: var(--success-600); }
+  &.p-toast-message-error { border-inline-start-color: var(--danger-600); }
+  &.p-toast-message-warn { border-inline-start-color: var(--warning-600); }
+}
+
+.p-toast-message-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  width: 100%;
+}
+
+.p-toast-message-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--info-600);
+
+  .p-toast-message-info & { color: var(--info-600); }
+  svg { width: 17px; height: 17px; }
+}
+
+.p-toast-message-success .p-toast-message-icon { color: var(--success-600); }
+.p-toast-message-error .p-toast-message-icon { color: var(--danger-600); }
+.p-toast-message-warn .p-toast-message-icon { color: var(--warning-600); }
+
+.p-toast-summary {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--slate-800);
+  margin-bottom: 2px;
+}
+
+.p-toast-detail {
+  display: block;
+  font-size: 12.5px;
+  color: var(--slate-500);
+  line-height: 1.5;
+}
+
+.p-toast-icon-close {
+  background: none;
+  border: none;
+  color: var(--slate-400);
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-inline-start: auto;
+
+  &:hover { color: var(--slate-700); }
+  svg { width: 12px; height: 12px; }
+}

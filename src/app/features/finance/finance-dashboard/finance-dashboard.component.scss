@@ -1,0 +1,266 @@
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  gap: 20px;
+}
+
+.page-sub {
+  margin: 6px 0 0;
+  color: var(--slate-500);
+  font-size: 13.5px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-primary, .btn-outline {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  white-space: nowrap;
+
+  i { font-size: 12px; }
+}
+
+.btn-primary {
+  background: var(--navy-900);
+  color: white;
+  &:hover { background: var(--navy-800); }
+}
+
+.btn-outline {
+  background: var(--surface-card);
+  border-color: var(--surface-border);
+  color: var(--slate-700);
+  &:hover { background: var(--slate-50); }
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.content-grid-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 22px 4px;
+
+  h3 {
+    font-size: 15px;
+    margin-bottom: 3px;
+  }
+}
+
+.card-sub {
+  font-size: 12px;
+  color: var(--slate-500);
+}
+
+.link-more {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--steel-600);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  i { font-size: 10px; }
+}
+
+.chart-card {
+  min-height: 340px;
+}
+
+.chart-wrap {
+  padding: 12px 18px 18px;
+  height: 260px;
+  position: relative;
+}
+
+// Aging
+.aging-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.aging-list {
+  padding: 12px 22px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.aging-top {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+
+.aging-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--slate-700);
+}
+
+.aging-value {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--navy-900);
+}
+
+.progress-track {
+  height: 7px;
+  background: var(--slate-100);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+
+  &.fill-success { background: var(--success-600); }
+  &.fill-warning { background: var(--warning-600); }
+  &.fill-danger { background: var(--danger-600); }
+}
+
+.aging-count {
+  font-size: 11.5px;
+  color: var(--slate-400);
+}
+
+// Overdue clients
+.overdue-list {
+  padding: 8px 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.overdue-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 10px;
+  border-radius: 9px;
+  transition: background 0.15s ease;
+
+  &:hover { background: var(--slate-50); }
+}
+
+.overdue-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.overdue-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--slate-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.overdue-meta {
+  font-size: 11.5px;
+  color: var(--slate-500);
+}
+
+.overdue-amount {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--danger-600);
+  flex-shrink: 0;
+}
+
+// Recent invoices
+.invoice-list {
+  padding: 8px 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.invoice-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 10px;
+  border-radius: 9px;
+  transition: background 0.15s ease;
+
+  &:hover { background: var(--slate-50); }
+}
+
+.invoice-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.invoice-number {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--steel-600);
+  font-family: var(--font-mono);
+}
+
+.invoice-customer {
+  font-size: 13px;
+  color: var(--slate-700);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.invoice-value {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--slate-800);
+  flex-shrink: 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 30px;
+  color: var(--slate-400);
+  font-size: 13px;
+}
+
+@media (max-width: 1200px) {
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .content-grid, .content-grid-2 { grid-template-columns: 1fr; }
+}

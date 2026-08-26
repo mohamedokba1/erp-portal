@@ -1,0 +1,104 @@
+<div class="shell" *ngIf="currentUser() as user">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">M</div>
+      <div class="brand-text">
+        <span class="brand-name">Meridian</span>
+        <span class="brand-sub">ERP Platform</span>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-section" *ngFor="let section of navSections()">
+        <span class="nav-section-title">{{ section.title | t }}</span>
+        <a
+          *ngFor="let item of section.items"
+          class="nav-item"
+          [class.disabled]="!item.route"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+        >
+          <i class="pi" [ngClass]="item.icon"></i>
+          <span class="nav-item-label">{{ item.label | t }}</span>
+          <span class="nav-item-badge" *ngIf="item.badge">{{ item.badge }}</span>
+          <i class="pi pi-lock lock-icon" *ngIf="!item.route"></i>
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="phase-chip">
+        <i class="pi pi-check-circle"></i>
+        <span>{{ user.roleLabel | t }}</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN AREA ============ -->
+  <div class="main-area">
+    <header class="topbar">
+      <div class="topbar-search">
+        <i class="pi pi-search"></i>
+        <input type="text" [placeholder]="'بحث عن عميل، عرض سعر، أو رقم فاتورة...' | t" />
+      </div>
+
+      <div class="topbar-actions">
+        <button type="button" class="lang-toggle" (click)="lang.toggle()">
+          <i class="pi pi-language"></i>
+          {{ lang.isEn() ? 'العربية' : 'English' }}
+        </button>
+
+        <div class="notif-menu">
+          <button class="icon-btn" [attr.aria-label]="'التنبيهات' | t" (click)="toggleNotifMenu()">
+            <i class="pi pi-bell"></i>
+            <span class="notif-dot" *ngIf="notifications().length"></span>
+          </button>
+          <div class="notif-dropdown" *ngIf="notifMenuOpen">
+            <div class="notif-header">
+              <span>{{ 'التنبيهات' | t }}</span>
+              <span class="badge badge-neutral">{{ notifications().length }}</span>
+            </div>
+            <div class="notif-list" *ngIf="notifications().length; else noNotif">
+              <a class="notif-row" *ngFor="let n of notifications()" [routerLink]="n.route" (click)="closeNotifMenu()">
+                <span class="notif-icon" [ngClass]="'sev-' + n.severity"><i class="pi" [ngClass]="n.icon"></i></span>
+                <div class="notif-body">
+                  <span class="notif-title">{{ n.title }}</span>
+                  <span class="notif-subtitle">{{ n.subtitle }}</span>
+                </div>
+              </a>
+            </div>
+            <ng-template #noNotif>
+              <div class="notif-empty">{{ 'لا يوجد تنبيهات جديدة حالياً.' | t }}</div>
+            </ng-template>
+          </div>
+        </div>
+
+        <div class="user-menu">
+          <button class="user-chip" (click)="toggleUserMenu()">
+            <div class="avatar" [style.background]="user.avatarColor">
+              {{ user.name.charAt(0) }}
+            </div>
+            <div class="user-meta">
+              <span class="user-name">{{ user.name }}</span>
+              <span class="user-role">{{ user.roleLabel | t }}</span>
+            </div>
+            <i class="pi pi-chevron-down chevron"></i>
+          </button>
+          <div class="user-dropdown" *ngIf="userMenuOpen">
+            <button class="dropdown-item" (click)="logout()">
+              <i class="pi pi-sign-out"></i>
+              {{ 'تسجيل الخروج' | t }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
+
+<p-toast position="top-left"></p-toast>

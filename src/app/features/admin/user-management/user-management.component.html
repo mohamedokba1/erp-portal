@@ -1,0 +1,153 @@
+<div class="page-header">
+  <div>
+    <h1>{{ 'المستخدمون والصلاحيات' | t }}</h1>
+    <p class="page-sub">{{ 'إدارة حسابات المستخدمين، أدوارهم، وصلاحياتهم داخل النظام' | t }}</p>
+  </div>
+  <button class="btn-primary" (click)="openCreate()"><i class="pi pi-user-plus"></i> {{ 'مستخدم جديد' | t }}</button>
+</div>
+
+<div class="mini-stats">
+  <div class="mini-stat">
+    <span class="mini-stat-value num">{{ users.length }}</span>
+    <span class="mini-stat-label">{{ 'إجمالي المستخدمين' | t }}</span>
+  </div>
+  <div class="mini-stat success">
+    <span class="mini-stat-value num">{{ activeCount }}</span>
+    <span class="mini-stat-label">{{ 'حسابات مفعّلة' | t }}</span>
+  </div>
+  <div class="mini-stat warn">
+    <span class="mini-stat-value num">{{ disabledCount }}</span>
+    <span class="mini-stat-label">{{ 'حسابات موقوفة' | t }}</span>
+  </div>
+</div>
+
+<div class="card users-card">
+  <div class="card-header">
+    <div>
+      <h3>{{ 'المستخدمون' | t }}</h3>
+    </div>
+  </div>
+
+  <div class="user-table">
+    <div class="u-row u-head">
+      <span>{{ 'المستخدم' | t }}</span>
+      <span>{{ 'الدور' | t }}</span>
+      <span>{{ 'الوحدات المتاحة' | t }}</span>
+      <span>{{ 'الحالة' | t }}</span>
+      <span>{{ 'الإجراءات' | t }}</span>
+    </div>
+    <div class="u-row" *ngFor="let u of users" [class.inactive]="!u.active">
+      <div class="u-cell u-user">
+        <div class="u-avatar" [style.background]="u.avatarColor">{{ u.name.charAt(0) }}</div>
+        <div class="u-info">
+          <span class="u-name">{{ u.name }}</span>
+          <span class="u-email">{{ u.email }}</span>
+        </div>
+      </div>
+      <div class="u-cell">
+        <select
+          class="role-select"
+          [ngModel]="u.role"
+          (ngModelChange)="onRoleChange(u, $event)"
+          [disabled]="isSelf(u)"
+        >
+          <option *ngFor="let r of roles" [value]="r">{{ roleMeta[r].roleLabel | t }}</option>
+        </select>
+      </div>
+      <div class="u-cell u-modules">
+        <span class="badge badge-neutral" *ngFor="let m of u.modules">{{ (m === 'sales' ? 'المبيعات' : 'الحسابات') | t }}</span>
+      </div>
+      <div class="u-cell">
+        <span class="badge" [ngClass]="u.active ? 'badge-success' : 'badge-neutral'">
+          {{ (u.active ? 'مفعّل' : 'موقوف') | t }}
+        </span>
+      </div>
+      <div class="u-cell">
+        <button class="btn-outline-sm" [disabled]="isSelf(u)" (click)="toggleActive(u)">
+          <i class="pi" [ngClass]="u.active ? 'pi-lock' : 'pi-lock-open'"></i>
+          {{ (u.active ? 'إيقاف' : 'تفعيل') | t }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card roles-card">
+  <div class="card-header">
+    <div>
+      <h3>{{ 'الأدوار والصلاحيات' | t }}</h3>
+      <span class="card-sub">{{ 'مرجع صلاحيات كل دور ومهامه داخل النظام' | t }}</span>
+    </div>
+  </div>
+
+  <div class="role-grid">
+    <div class="role-card" *ngFor="let r of roles">
+      <div class="role-card-head">
+        <span class="badge" [ngClass]="'badge-' + roleBadge(r)">{{ roleMeta[r].roleLabel | t }}</span>
+      </div>
+      <h4>{{ 'المهام والمسؤوليات' | t }}</h4>
+      <ul class="duties-list">
+        <li *ngFor="let d of roleMeta[r].duties">{{ d | t }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <h4 class="matrix-title">{{ 'مصفوفة الصلاحيات' | t }}</h4>
+  <div class="matrix-scroll">
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th *ngFor="let r of roles">{{ roleMeta[r].roleLabel | t }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of allPermissions">
+          <td class="perm-label">{{ permissionLabels[p] | t }}</td>
+          <td *ngFor="let r of roles" class="perm-cell">
+            <i class="pi pi-check" *ngIf="roleMeta[r].permissions.includes(p)"></i>
+            <span *ngIf="!roleMeta[r].permissions.includes(p)" class="dash">—</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ============ CREATE USER DIALOG ============ -->
+<p-dialog
+  [(visible)]="showCreate"
+  [modal]="true"
+  [style]="{ width: '440px' }"
+  [dismissableMask]="true"
+  [header]="'مستخدم جديد' | t"
+  (onHide)="closeCreate()"
+>
+  <div class="form-grid-1">
+    <div class="field">
+      <label>{{ 'الاسم الكامل' | t }}</label>
+      <input type="text" class="form-input" [(ngModel)]="newUser.name" />
+    </div>
+    <div class="field">
+      <label>{{ 'البريد الإلكتروني' | t }}</label>
+      <input type="email" class="form-input" [(ngModel)]="newUser.email" placeholder="name@meridian.com" />
+    </div>
+    <div class="field">
+      <label>{{ 'كلمة مرور مؤقتة' | t }}</label>
+      <input type="text" class="form-input" [(ngModel)]="newUser.password" />
+    </div>
+    <div class="field">
+      <label>{{ 'الدور' | t }}</label>
+      <select class="form-input" [(ngModel)]="newUser.role">
+        <option *ngFor="let r of roles" [value]="r">{{ roleMeta[r].roleLabel | t }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="dialog-footer">
+    <button class="btn-outline-sm" (click)="closeCreate()">{{ 'إلغاء' | t }}</button>
+    <button class="btn-primary-sm" [disabled]="!isCreateValid" (click)="saveUser()">
+      <i class="pi pi-check"></i> {{ 'إنشاء المستخدم' | t }}
+    </button>
+  </div>
+</p-dialog>

@@ -1,0 +1,104 @@
+<div class="login-screen">
+  <div class="brand-panel">
+    <div class="brand-panel-inner">
+      <div class="brand">
+        <div class="brand-mark">M</div>
+        <div class="brand-text">
+          <span class="brand-name">Meridian</span>
+          <span class="brand-sub">ERP Platform</span>
+        </div>
+      </div>
+
+      <h1 class="pitch-title">{{ 'منصة موحّدة لإدارة المبيعات والحسابات' | t }}</h1>
+      <p class="pitch-sub">{{ 'نسخة تجريبية بالكامل — جميع البيانات ثابتة ولا يوجد أي اتصال بخادم حقيقي.' | t }}</p>
+
+      <div class="feature-list">
+        <div class="feature-item">
+          <i class="pi pi-check-circle"></i>
+          <div>
+            <span class="feature-title">{{ 'إدارة العملاء وعروض الأسعار' | t }}</span>
+            <span class="feature-desc">{{ 'لوحة مؤشرات، ملف عميل 360°، ودورة اعتماد العروض' | t }}</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <i class="pi pi-check-circle"></i>
+          <div>
+            <span class="feature-title">{{ 'إدارة الفواتير والتحصيل' | t }}</span>
+            <span class="feature-desc">{{ 'إصدار فواتير، تسجيل دفعات، وتقارير أعمار الديون' | t }}</span>
+          </div>
+        </div>
+        <div class="feature-item">
+          <i class="pi pi-check-circle"></i>
+          <div>
+            <span class="feature-title">{{ 'صلاحيات وصول حسب الدور الوظيفي' | t }}</span>
+            <span class="feature-desc">{{ 'مدير عام، مدير مبيعات، مندوب مبيعات، ومحاسب — لكل دور واجهته وصلاحياته الخاصة' | t }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-panel">
+    <div class="form-wrap">
+      <div class="form-header">
+        <button type="button" class="lang-toggle" (click)="lang.toggle()">
+          <i class="pi pi-language"></i>
+          {{ lang.isEn() ? 'العربية' : 'English' }}
+        </button>
+        <h2>{{ 'تسجيل الدخول' | t }}</h2>
+        <p>{{ 'أدخل بياناتك للوصول إلى النظام' | t }}</p>
+      </div>
+
+      <form (ngSubmit)="submit()" class="login-form">
+        <div class="field">
+          <label>{{ 'البريد الإلكتروني' | t }}</label>
+          <div class="input-wrap">
+            <i class="pi pi-envelope"></i>
+            <input type="email" name="email" [(ngModel)]="email" placeholder="example@meridian.com" autocomplete="username" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>{{ 'كلمة المرور' | t }}</label>
+          <div class="input-wrap">
+            <i class="pi pi-lock"></i>
+            <input [type]="showPassword ? 'text' : 'password'" name="password" [(ngModel)]="password" placeholder="••••••••" autocomplete="current-password" />
+            <button type="button" class="toggle-visibility" (click)="showPassword = !showPassword" tabindex="-1">
+              <i class="pi" [ngClass]="showPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="error-msg" *ngIf="error">
+          <i class="pi pi-exclamation-circle"></i>
+          {{ error }}
+        </div>
+
+        <button type="submit" class="btn-submit" [disabled]="loading">
+          <span *ngIf="!loading">{{ 'تسجيل الدخول' | t }}</span>
+          <span *ngIf="loading" class="loading-dots"><i class="pi pi-spin pi-spinner"></i> {{ 'جارٍ التحقق...' | t }}</span>
+        </button>
+      </form>
+
+      <div class="divider"><span>{{ 'أو دخول سريع بحساب تجريبي' | t }}</span></div>
+
+      <div class="demo-grid">
+        <button class="demo-card" *ngFor="let u of demoUsers" (click)="quickLogin(u)" type="button">
+          <div class="demo-avatar" [style.background]="u.avatarColor">
+            <i class="pi" [ngClass]="roleIcon(u)"></i>
+          </div>
+          <div class="demo-info">
+            <span class="demo-name">{{ u.name }}</span>
+            <span class="demo-role">{{ u.roleLabel | t }}</span>
+          </div>
+          <i class="pi pi-arrow-left demo-arrow"></i>
+        </button>
+      </div>
+
+      <p class="demo-note">
+        <i class="pi pi-info-circle"></i>
+        {{ 'بيانات تجريبية للعرض فقط — بدون أي اتصال حقيقي بخادم أو قاعدة بيانات.' | t }}
+      </p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,160 @@
+<div *ngIf="customer as c">
+  <a routerLink="/customers" class="back-link"><i class="pi pi-arrow-right"></i> {{ 'رجوع لقائمة العملاء' | t }}</a>
+
+  <!-- Header -->
+  <div class="profile-header card">
+    <div class="profile-main">
+      <div class="profile-avatar">{{ c.name.charAt(0) }}</div>
+      <div class="profile-info">
+        <div class="profile-title">
+          <h1>{{ c.name }}</h1>
+          <span class="badge" [ngClass]="'badge-' + tierBadge(c.tier)">{{ c.tier | t }}</span>
+          <span class="badge" [ngClass]="'badge-' + statusBadge(c.status)">{{ c.status | t }}</span>
+        </div>
+        <div class="profile-meta">
+          <span><i class="pi pi-hashtag"></i> {{ c.code }}</span>
+          <span><i class="pi pi-map-marker"></i> {{ c.city | t }}</span>
+          <span><i class="pi pi-briefcase"></i> {{ c.sector | t }}</span>
+          <span><i class="pi pi-phone"></i> {{ c.phone }}</span>
+          <span><i class="pi pi-envelope"></i> {{ c.email }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="profile-owner">
+      <span class="owner-label">{{ 'مندوب المبيعات المسؤول' | t }}</span>
+      <div class="owner-chip">
+        <span class="owner-avatar" [style.background]="c.ownerAvatarColor">{{ c.owner.charAt(0) }}</span>
+        {{ c.owner }}
+      </div>
+      <button class="btn-outline-sm" *ngIf="auth.can('customers.transfer')" (click)="openTransfer()">
+        <i class="pi pi-arrow-right-arrow-left"></i> {{ 'نقل العميل' | t }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Stat strip -->
+  <div class="stat-strip">
+    <div class="stat-box">
+      <span class="stat-label">{{ 'إجمالي الإيرادات' | t }}</span>
+      <span class="stat-value num">{{ c.totalRevenue | number }} {{ 'ج.م' | t }}</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-label">{{ 'عروض أسعار مفتوحة' | t }}</span>
+      <span class="stat-value num">{{ c.openQuotesValue | number }} {{ 'ج.م' | t }}</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-label">{{ 'آخر تواصل' | t }}</span>
+      <span class="stat-value">{{ c.lastContactDaysAgo | daysAgo }}</span>
+    </div>
+    <div class="stat-box">
+      <span class="stat-label">{{ 'عميل منذ' | t }}</span>
+      <span class="stat-value">{{ c.createdAt }}</span>
+    </div>
+  </div>
+
+  <!-- Tabs: Activities / Quotes / Orders -->
+  <div class="card tabs-card">
+    <p-tabView>
+      <p-tabPanel [header]="tabHeader('سجل التواصل', activities.length)">
+        <div class="timeline" *ngIf="activities.length; else noActivity">
+          <div class="timeline-item" *ngFor="let a of activities">
+            <div class="timeline-icon">
+              <i class="pi" [ngClass]="activityIcon(a.type)"></i>
+            </div>
+            <div class="timeline-content">
+              <div class="timeline-top">
+                <span class="timeline-type">{{ a.type | t }}</span>
+                <span class="timeline-date">{{ a.date }}</span>
+              </div>
+              <p class="timeline-summary">{{ a.summary }}</p>
+              <span class="timeline-by">{{ 'بواسطة' | t }} {{ a.by }}</span>
+            </div>
+          </div>
+        </div>
+        <ng-template #noActivity>
+          <div class="empty-tab">
+            <i class="pi pi-inbox"></i>
+            <p>{{ 'لا يوجد سجل تواصل مسجل مع هذا العميل حتى الآن.' | t }}</p>
+          </div>
+        </ng-template>
+      </p-tabPanel>
+
+      <p-tabPanel [header]="tabHeader('عروض الأسعار', quotes.length)">
+        <div class="quotes-table" *ngIf="quotes.length; else noQuotes">
+          <div class="q-row q-head">
+            <span>{{ 'رقم العرض' | t }}</span>
+            <span>{{ 'التاريخ' | t }}</span>
+            <span>{{ 'ساري حتى' | t }}</span>
+            <span>{{ 'القيمة' | t }}</span>
+            <span>{{ 'الحالة' | t }}</span>
+          </div>
+          <div class="q-row" *ngFor="let q of quotes">
+            <span class="q-number">{{ q.quoteNumber }}</span>
+            <span>{{ q.createdAt }}</span>
+            <span>{{ q.validUntil }}</span>
+            <span class="num">{{ q.totalValue | number }} {{ 'ج.م' | t }}</span>
+            <span><span class="badge" [ngClass]="'badge-' + quoteStatusBadge(q.status)">{{ q.status | t }}</span></span>
+          </div>
+        </div>
+        <ng-template #noQuotes>
+          <div class="empty-tab">
+            <i class="pi pi-file"></i>
+            <p>{{ 'لا يوجد عروض أسعار لهذا العميل بعد.' | t }}</p>
+          </div>
+        </ng-template>
+      </p-tabPanel>
+
+      <p-tabPanel [header]="tabHeader('أوامر البيع', orders.length)">
+        <div class="quotes-table" *ngIf="orders.length; else noOrders">
+          <div class="q-row q-head-3">
+            <span>{{ 'رقم الأمر' | t }}</span>
+            <span>{{ 'التاريخ' | t }}</span>
+            <span>{{ 'القيمة' | t }}</span>
+            <span>{{ 'الحالة' | t }}</span>
+          </div>
+          <div class="q-row q-head-3" *ngFor="let o of orders">
+            <span class="q-number">{{ o.orderNumber }}</span>
+            <span>{{ o.date }}</span>
+            <span class="num">{{ o.value | number }} {{ 'ج.م' | t }}</span>
+            <span><span class="badge" [ngClass]="'badge-' + orderStatusBadge(o.status)">{{ o.status | t }}</span></span>
+          </div>
+        </div>
+        <ng-template #noOrders>
+          <div class="empty-tab">
+            <i class="pi pi-box"></i>
+            <p>{{ 'لا يوجد أوامر بيع مسجلة لهذا العميل بعد.' | t }}</p>
+          </div>
+        </ng-template>
+      </p-tabPanel>
+    </p-tabView>
+  </div>
+</div>
+
+<!-- ============ TRANSFER CUSTOMER DIALOG ============ -->
+<p-dialog
+  [(visible)]="showTransfer"
+  [modal]="true"
+  [style]="{ width: '420px' }"
+  [dismissableMask]="true"
+  [header]="'نقل ملكية العميل' | t"
+  (onHide)="closeTransfer()"
+>
+  <ng-container *ngIf="customer as c">
+    <p class="transfer-line">
+      {{ c.name }}
+      <span class="transfer-current">{{ 'مندوب المبيعات المسؤول' | t }}: {{ c.owner }}</span>
+    </p>
+
+    <div class="field">
+      <label>{{ 'مندوب المبيعات الجديد' | t }}</label>
+      <p-dropdown [options]="repNames" [(ngModel)]="newOwner" styleClass="w-full"></p-dropdown>
+    </div>
+
+    <div class="dialog-footer">
+      <button class="btn-outline-sm" (click)="closeTransfer()">{{ 'إلغاء' | t }}</button>
+      <button class="btn-primary-sm" (click)="confirmTransfer()">
+        <i class="pi pi-check"></i> {{ 'نقل العميل' | t }}
+      </button>
+    </div>
+  </ng-container>
+</p-dialog>

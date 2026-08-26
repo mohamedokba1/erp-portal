@@ -1,0 +1,309 @@
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.page-sub {
+  margin: 6px 0 0;
+  color: var(--slate-500);
+  font-size: 13.5px;
+}
+
+.btn-primary {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  background: var(--navy-900);
+  color: white;
+  white-space: nowrap;
+
+  &:hover { background: var(--navy-800); }
+  i { font-size: 12px; }
+}
+
+.mini-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.mini-stat {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &.warn { background: var(--warning-100); border-color: rgba(199, 125, 29, 0.25); .mini-stat-value { color: var(--warning-600); } }
+  &.success { background: var(--success-100); border-color: rgba(27, 138, 90, 0.25); .mini-stat-value { color: var(--success-600); } }
+}
+
+.mini-stat-value { font-size: 20px; font-weight: 800; color: var(--navy-900); }
+.mini-stat-label { font-size: 12px; color: var(--slate-500); font-weight: 500; }
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 22px 4px;
+
+  h3 { font-size: 15px; margin-bottom: 3px; }
+}
+
+.card-sub { font-size: 12px; color: var(--slate-500); }
+
+.users-card { margin-bottom: 18px; }
+
+.user-table {
+  padding: 8px 22px 22px;
+}
+
+.u-row {
+  display: grid;
+  grid-template-columns: 2fr 1.1fr 1.3fr 0.9fr 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--surface-border);
+
+  &:last-child { border-bottom: none; }
+  &.inactive { opacity: 0.55; }
+}
+
+.u-head {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--slate-400);
+}
+
+.u-cell { min-width: 0; }
+
+.u-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.u-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13.5px;
+  flex-shrink: 0;
+}
+
+.u-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.u-name { font-size: 13.5px; font-weight: 600; color: var(--slate-800); }
+.u-email { font-size: 11.5px; color: var(--slate-400); }
+
+.u-modules {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.btn-outline-sm, .btn-primary-sm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+
+  i { font-size: 11px; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+.btn-outline-sm {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  color: var(--slate-600);
+  &:hover:not(:disabled) { background: var(--slate-50); }
+}
+
+.btn-primary-sm {
+  background: var(--navy-900);
+  border: 1px solid var(--navy-900);
+  color: white;
+  &:hover:not(:disabled) { background: var(--navy-800); }
+}
+
+.role-select {
+  min-width: 150px;
+  border: 1px solid var(--slate-300);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: var(--font-ui);
+  color: var(--slate-700);
+  background: var(--surface-card);
+  cursor: pointer;
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+// Roles reference
+.roles-card { padding-bottom: 24px; }
+
+.role-grid {
+  padding: 12px 22px 8px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.role-card {
+  background: var(--slate-50);
+  border-radius: var(--radius-md);
+  padding: 16px 16px;
+}
+
+.role-card-head { margin-bottom: 12px; }
+
+.role-card h4 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--slate-400);
+  margin-bottom: 8px;
+}
+
+.duties-list {
+  margin: 0;
+  padding-inline-start: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+
+  li {
+    font-size: 12.5px;
+    color: var(--slate-600);
+    line-height: 1.55;
+  }
+}
+
+.matrix-title {
+  font-size: 13px;
+  margin: 22px 22px 10px;
+}
+
+.matrix-scroll {
+  padding: 0 22px 4px;
+  overflow-x: auto;
+}
+
+.matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 620px;
+
+  th {
+    text-align: center;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--slate-600);
+    padding: 10px 8px;
+    border-bottom: 2px solid var(--surface-border);
+
+    &:first-child { text-align: start; }
+  }
+
+  td {
+    padding: 10px 8px;
+    font-size: 12.5px;
+    border-bottom: 1px solid var(--surface-border);
+  }
+}
+
+.perm-label {
+  color: var(--slate-700);
+  white-space: nowrap;
+}
+
+.perm-cell {
+  text-align: center;
+
+  i.pi-check {
+    color: var(--success-600);
+    font-size: 13px;
+  }
+
+  .dash { color: var(--slate-300); }
+}
+
+// Create dialog
+.form-grid-1 {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--slate-600);
+}
+
+.form-input {
+  border: 1px solid var(--slate-300);
+  border-radius: 7px;
+  padding: 9px 12px;
+  font-size: 13px;
+  font-family: var(--font-ui);
+  color: var(--slate-800);
+  outline: none;
+  width: 100%;
+  background: var(--surface-card);
+
+  &:focus { border-color: var(--steel-500); box-shadow: 0 0 0 3px rgba(63, 122, 176, 0.15); }
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--surface-border);
+  margin-top: 4px;
+}
+
+::ng-deep .w-full { width: 100%; }
+
+@media (max-width: 1200px) {
+  .role-grid { grid-template-columns: repeat(2, 1fr); }
+}
